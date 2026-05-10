@@ -1,0 +1,24 @@
+[package]
+name = "event_hex"
+version = "0.1.0"
+edition = "2024"
+description = ""
+keywords = []
+
+[dependencies]
+derive-getters = "0.5.0"
+serde = { version = "1.0.228", features = ["derive"] }
+typed-builder = "0.23.2"
+bson = { version = "3.1.0", features = ["uuid-1", "serde_with-3", "serde"] }
+uuid = { version = "1.23.0", features = ["serde", "v4", "fast-rng", "v7"] }
+anyhow = "1.0.102"
+chrono = { version = "0.4.44", features = ["serde"] }
+erased-serde = "0.4.10"
+sha2 = "0.11.0"
+serde_with = { version = "3.18.0" }
+serde_json = "1.0.149"
+async-trait = "0.1.89"
+bincode = { version = "2.0.1", features = ["serde"] }
+thiserror = "2.0.18"
+downcast-rs = "2.0.2"
+futures = "0.3.32"
