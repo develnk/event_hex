@@ -17,6 +17,10 @@ pub enum EventHexError {
     #[error("EventStore error: {0}")]
     EventStore(#[from] EventStoreError),
 
+    #[cfg(feature = "mongo")]
+    #[error("MongoDB error: {0}")]
+    MongoError(#[from] mongodb::error::Error),
+
     #[error("Query handler error: {0}")]
     QueryHandler(#[from] QueryHandlerError),
 
@@ -150,6 +154,13 @@ impl From<serde_json::Error> for EventStoreError {
     fn from(err: serde_json::Error) -> Self {
         // todo в зависимости от типа ошибки(сериализация или десереализация) отдавать соотв. ошибку
         EventStoreError::DeSerializationError(err.to_string())
+    }
+}
+
+#[cfg(feature = "mongo")]
+impl From<mongodb::error::Error> for EventStoreError {
+    fn from(value: mongodb::error::Error) -> Self {
+        EventStoreError::StoreError(value.to_string())
     }
 }
 

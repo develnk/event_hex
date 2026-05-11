@@ -2,16 +2,14 @@ use std::{any::Any, sync::Arc};
 
 use async_trait::async_trait;
 use mongodb::{
-    Client, ClientSession,
-    options::{ReadPreference, SelectionCriteria},
+    options::{ReadPreference, SelectionCriteria}, Client,
+    ClientSession,
 };
 
-use crate::{
-    application::ports::transaction::{
-        ErasedResult, TransactionContext, TransactionHandler, TransactionManager,
-    },
-    shared_kernel::errors::AppError,
+use crate::application::ports::transaction::{
+    ErasedResult, TransactionContext, TransactionHandler, TransactionManager,
 };
+use crate::shared_kernel::errors::EventHexError;
 
 // Реализация контекста для Mongo
 pub struct MongoContext {
@@ -52,10 +50,10 @@ impl MongoTransactionManager {
                     Ok(_) => {
                         let _ = session.abort_transaction().await;
                         true
-                    },
+                    }
                     Err(_) => false,
                 }
-            },
+            }
             Err(_) => false,
         }
     }
@@ -63,16 +61,16 @@ impl MongoTransactionManager {
 
 #[async_trait]
 impl TransactionManager for MongoTransactionManager {
-    async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, AppError> {
+    async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError> {
         if self.use_transactions {
             // Логика с транзакцией
-            let mut session = self.client.start_session().await.map_err(|e| AppError::MongoError(e))?;
+            let mut session = self.client.start_session().await.map_err(|e| EventHexError::MongoError(e))?;
 
             session
                 .start_transaction()
                 .selection_criteria(SelectionCriteria::ReadPreference(ReadPreference::Primary))
                 .await
-                .map_err(|e| AppError::MongoError(e))?;
+                .map_err(|e| EventHexError::MongoError(e))?;
 
             let mut ctx = MongoContext { session };
 
@@ -80,13 +78,13 @@ impl TransactionManager for MongoTransactionManager {
 
             match result {
                 Ok(value) => {
-                    ctx.session.commit_transaction().await.map_err(|e| AppError::MongoError(e))?;
+                    ctx.session.commit_transaction().await.map_err(|e| EventHexError::MongoError(e))?;
                     Ok(value)
-                },
+                }
                 Err(e) => {
-                    ctx.session.abort_transaction().await.map_err(|e| AppError::MongoError(e))?;
+                    ctx.session.abort_transaction().await.map_err(|e| EventHexError::MongoError(e))?;
                     Err(e)
-                },
+                }
             }
         } else {
             // Без транзакции (standalone mode)

@@ -1,12 +1,12 @@
 [package]
 name = "event_hex"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
 description = "A library that helps implement hexagonal architecture + Event Sourcing + CQRS following DDD"
 keywords = ["hexagonal", "architecture", "ddd", "event-sourcing", "cqrs"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-repository = ""
+repository = "https://github.com/develnk/event_hex.git"
 rust-version = "1.95.0"
 
 [dependencies]
