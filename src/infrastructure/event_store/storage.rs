@@ -4,7 +4,7 @@ use crate::shared_kernel::domain_event::{Snapshot, StoredEvent};
 use crate::shared_kernel::errors::EventStoreError;
 use async_trait::async_trait;
 
-/// Абстракция операций хранилища событий. Позволяет заменить MongoDB на мок для тестов.
+/// Abstraction of event store operations. Allows replacing MongoDB with a mock for testing.
 #[async_trait]
 pub trait EventStoreStorage<A: AggregateRoot>: Send + Sync {
     async fn find_last_event(&self, ctx: &mut dyn TransactionContext, aggregate_id: &EntityId, aggregate_type: &str) -> Result<Option<StoredEvent>, EventStoreError>;

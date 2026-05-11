@@ -17,7 +17,7 @@ pub type TransactionHandler = Box<dyn for<'a> FnOnce(&'a mut dyn TransactionCont
 /// Port for transaction management.
 #[async_trait]
 pub trait TransactionManager: Send + Sync {
-    // Используем TransactionHandler<'a> с временем жизни из аргумента
+    // Use TransactionHandler<'a> with the lifetime from the argument
     async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError>;
 }
 
@@ -27,7 +27,7 @@ impl dyn TransactionManager {
         T: Any + Send + 'static,
         F: FnOnce(&mut dyn TransactionContext) -> BoxFuture<'_, Result<T, EventHexError>> + Send + 'static,
     {
-        // Оборачиваем пользовательский handler в ErasedResult
+        // Wrap the user-defined handler in ErasedResult
         let handler: TransactionHandler = Box::new(|ctx| {
             Box::pin(async move {
                 let res = f(ctx).await?;

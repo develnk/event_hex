@@ -11,7 +11,7 @@ pub enum EventHexError {
     #[error("Domain event handler error: {0}")]
     DomainEventHandler(#[from] DomainEventHandlerError),
 
-    #[error("Ошибка приведения к нужному типу {0}")]
+    #[error("Error casting to the required type {0}")]
     DownCastError(String),
 
     #[error("EventStore error: {0}")]
@@ -27,16 +27,16 @@ pub enum EventHexError {
     #[error("Serialize JSON error: {0}")]
     SerdeError(#[from] serde_json::Error),
 
-    #[error("В этом месте контекст транзакции обязательно нужен")]
+    #[error("Transaction context is required here")]
     TransactionContextRequired(),
 
-    #[error("Ошибка проекции домена: {0}")]
+    #[error("Domain projection error: {0}")]
     ProjectionError(#[from] ProjectionError),
 }
 
 #[derive(Error, Debug, Clone)]
 pub enum DomainEventHandlerError {
-    #[error("Общая ошибка обработки доменного события: {0}")]
+    #[error("Common domain event handling error: {0}")]
     DomainEventHandlerCommon(String),
 
     #[error("Failed to downcast event type")]
@@ -99,7 +99,7 @@ pub enum QueryHandlerError {
 
 impl From<Box<dyn Query>> for QueryHandlerError {
     fn from(_err: Box<dyn Query>) -> Self {
-        // todo выяснить каким-либо образом какой именно QueryHandlerError передать
+        // todo figure out somehow which QueryHandlerError to pass
         QueryHandlerError::QueryDowncastFailed()
     }
 }
@@ -112,10 +112,10 @@ pub enum EventStoreError {
     #[error("Error serializing event stored in  DB: {0}")]
     DeSerializationError(String),
 
-    #[error("Ошибка во время сериализации события/агрегата")]
+    #[error("Error during event/aggregate serialization")]
     SerializationError(),
 
-    #[error("Проверка целостности события под номером: {version} выявила ошибку для агрегата {aggregate_type}: {aggregate_id}"
+    #[error("Integrity check for event #{version} failed for aggregate {aggregate_type}: {aggregate_id}"
     )]
     EventChainVerifyError {
         aggregate_id: Uuid,
@@ -123,7 +123,7 @@ pub enum EventStoreError {
         version: u32,
     },
 
-    #[error("Ошибка сериалзации/хеширования события под номером: {version} для агрегата {aggregate_type}:{aggregate_id}"
+    #[error("Serialization/hashing error for event #{version} of aggregate {aggregate_type}:{aggregate_id}"
     )]
     EventChainSerializeError {
         aggregate_id: Uuid,
@@ -143,7 +143,7 @@ pub enum EventStoreError {
     #[error("Error in the event event_store: {0}")]
     StoreError(String),
 
-    #[error("Ошибка в хранилище снапшотов: {0}")]
+    #[error("Snapshot store error: {0}")]
     SnapshotStoreError(String),
 
     #[error("Store Domain specific error: {0}")]
@@ -152,7 +152,7 @@ pub enum EventStoreError {
 
 impl From<serde_json::Error> for EventStoreError {
     fn from(err: serde_json::Error) -> Self {
-        // todo в зависимости от типа ошибки(сериализация или десереализация) отдавать соотв. ошибку
+        // todo depending on the error type (serialization or deserialization), return the appropriate error
         EventStoreError::DeSerializationError(err.to_string())
     }
 }
@@ -204,19 +204,19 @@ impl From<serde_json::Error> for DomainError {
 
 #[derive(Error, Debug, Clone)]
 pub enum ProjectionError {
-    #[error("Ошибка сериализации данных: {0}")]
+    #[error("Data serialization error: {0}")]
     ProjectionSerializeError(String),
 
-    #[error("Ошибка в хранилище проекций: {0}")]
+    #[error("Projection store error: {0}")]
     StoreProjectionError(String),
 
-    #[error("Ошибка применения события к проекции {0}")]
+    #[error("Error applying event to projection {0}")]
     ApplyEventToProjectionError(String),
 
-    #[error("Проекция {0} не найдена. Её id: {1}")]
+    #[error("Projection {0} not found. Its id: {1}")]
     ProjectionNotFound(String, String),
 
-    #[error("Ошибка обработки доменного события для Проекции")]
+    #[error("Domain event processing error for Projection")]
     DomainEventHandlerError,
 }
 

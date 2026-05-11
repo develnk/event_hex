@@ -79,8 +79,8 @@ impl fmt::Display for StoredEvent {
     }
 }
 
-/// Структура, представляющая новое событие перед сохранением в БД.
-/// Используется для передачи данных в метод append.
+/// Structure representing a new event before saving to the database.
+/// Used to pass data to the append method.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventPreRecord {
     pub metadata: Value,
@@ -92,7 +92,7 @@ pub fn get_event_records<T: DomainEvent + Serialize>(events: Vec<&T>) -> Vec<Eve
     events
         .into_iter()
         .map(|event| {
-            // @TODO временно пустая метадата.
+            // @TODO temporarily empty metadata.
             let metadata: Value = serde_json::to_value("").unwrap();
 
             EventPreRecord {
@@ -106,41 +106,41 @@ pub fn get_event_records<T: DomainEvent + Serialize>(events: Vec<&T>) -> Vec<Eve
 
 pub fn convert_event_to_event_pre_record<E: DomainEvent + Serialize>(event: &E) -> EventPreRecord {
     EventPreRecord {
-        // @TODO временно пустая метадата.
+        // @TODO temporarily empty metadata.
         metadata: Value::Null,
         event: serde_json::to_value(event).unwrap_or(Value::Null),
         event_type: event.event_type_name().to_string(),
     }
 }
 
-/// Общий трейт для всех доменных событий.
+/// Common trait for all domain events.
 #[async_trait]
 pub trait DomainEvent: Debug + ErasedSerialize + Send + Sync + 'static {
-    /// Уникальный ID события
+    /// Unique event ID
     fn new_event_id(&self) -> Uuid {
         Uuid::now_v7()
     }
     fn aggregate_id(&self) -> EntityId {
         EntityId::new()
     }
-    /// Время создания события
+    /// Event creation time
     fn occurred_on(&self) -> DateTime<Utc> {
         Utc::now()
     }
-    /// Тип события (строковое представление, полезно для логирования/диспатча)
+    /// Event type (string representation, useful for logging/dispatching)
     fn event_type_name(&self) -> String;
 
     fn event_type_id(&self) -> TypeId {
         TypeId::of::<Self>()
     }
 
-    // Дополнительный метод для получения ссылки на Any
+    // Additional method to get a reference to Any
     fn as_any(&self) -> &dyn Any;
     fn as_any_arc(self: Arc<Self>) -> Arc<dyn Any + Send + Sync>;
 }
 erased_serde::serialize_trait_object!(DomainEvent);
 
-/// Общий трейт для обработчиков событий.
+/// Common trait for event handlers.
 #[async_trait]
 pub trait DomainEventHandler<E>: Debug + Send + Sync + 'static
 where

@@ -14,7 +14,7 @@ use mongodb::{Client, Collection};
 use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
-/// Реализация хранилища событий на MongoDB.
+/// MongoDB event store implementation.
 pub struct MongoEventStoreStorage<A: AggregateRoot + Send + Sync + 'static> {
     events_collection: Collection<StoredEvent>,
     snapshots_collection: Collection<Snapshot<A>>,

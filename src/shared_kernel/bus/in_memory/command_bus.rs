@@ -60,7 +60,7 @@ impl CommandBusPort for CommandBus {
             Box::pin(async move {
                 let command = command_box
                     .downcast::<C>()
-                    .map_err(|_| CommandHandlerDownCast(String::from("Ошибка downcast команды")))?;
+                    .map_err(|_| CommandHandlerDownCast(String::from("Command downcast error")))?;
 
                 let handler = factory_clone.create().await?;
 

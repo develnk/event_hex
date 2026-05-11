@@ -1,5 +1,5 @@
 /*
-* Адаптеры для сохранения данных (Реализация Repository трейтов)
+* Adapters for data persistence (Repository trait implementations)
 */
 pub mod mongo_transaction;
 

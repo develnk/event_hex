@@ -11,7 +11,7 @@ use serde::Serialize;
 use std::sync::Arc;
 use uuid::Uuid;
 
-/// Event Store репозиторий, работающий через абстракцию хранилища.
+/// Event Store repository working through a storage abstraction.
 pub struct EventStoreRepositoryImpl<A: AggregateRoot + Send + Sync + 'static> {
     storage: Arc<dyn EventStoreStorage<A>>,
     snapshot_threshold: u8,
@@ -126,10 +126,10 @@ where
     }
 }
 
-/// MongoDB Event Store репозиторий — обратная совместимость с существующим кодом.
+/// MongoDB Event Store repository — backward compatibility with existing code.
 pub type MongoEventStoreRepository<A> = EventStoreRepositoryImpl<A>;
 
-/// Проверка целостности цепочки событий.
+/// Event chain integrity verification.
 pub fn verify_event_chain(aggregate_id: &EntityId, aggregate_type: &str, events: &[StoredEvent]) -> Result<(), EventStoreError> {
     for i in 0..events.len() {
         let current_record = &events[i];

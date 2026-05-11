@@ -11,19 +11,19 @@ use crate::application::ports::transaction::{
 };
 use crate::shared_kernel::errors::EventHexError;
 
-// Реализация контекста для Mongo
+// Mongo context implementation
 pub struct MongoContext {
     pub session: ClientSession,
 }
 
-// Реализация абстрактного контекста транзакции
+// Abstract transaction context implementation
 impl TransactionContext for MongoContext {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }
 
-// Контекст для работы без транзакций (standalone mode)
+// Context for working without transactions (standalone mode)
 struct NoopTransactionContext;
 
 impl TransactionContext for NoopTransactionContext {
@@ -63,7 +63,7 @@ impl MongoTransactionManager {
 impl TransactionManager for MongoTransactionManager {
     async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError> {
         if self.use_transactions {
-            // Логика с транзакцией
+            // Transaction logic
             let mut session = self.client.start_session().await.map_err(|e| EventHexError::MongoError(e))?;
 
             session
@@ -87,7 +87,7 @@ impl TransactionManager for MongoTransactionManager {
                 }
             }
         } else {
-            // Без транзакции (standalone mode)
+            // Without transaction (standalone mode)
             let mut ctx = NoopTransactionContext;
             handler(&mut ctx).await
         }

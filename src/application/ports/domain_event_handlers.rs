@@ -12,8 +12,8 @@ impl ProjectionUpdaterEventHandler {
     }
 }
 
-// Фабрика для обновления любых проекций.
-// Если понадобится, в неё можно добавить поля, например context
+// Factory for updating any projections.
+// If needed, fields can be added, e.g., context
 pub struct ProjectionUpdaterEventHandlerFactory;
 
 impl ProjectionUpdaterEventHandlerFactory {

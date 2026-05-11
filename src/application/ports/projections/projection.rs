@@ -5,13 +5,13 @@ use async_trait::async_trait;
 use std::any::Any;
 use std::fmt::Debug;
 
-//Порт: Общий репозиторий проекции
+// Port: General projection repository
 #[async_trait]
 pub trait ProjectionRepository: Debug + Any + Send + Sync + 'static {
-    //Метод для обработки одного события
+    // Method for processing a single event
     async fn apply_event(&mut self, aggregate_id: &EntityId, event: &dyn DomainEvent) -> Result<(), ProjectionError>;
 
-    // Метод для полного перестроения  — необходимо, если мы меняем структуру Read Model
+    // Method for full rebuild — necessary if we change the Read Model structure
     async fn rebuild(&mut self, aggregate_id: &EntityId, stream: Vec<&dyn DomainEvent>) -> Result<(), ProjectionError>;
 }
 
