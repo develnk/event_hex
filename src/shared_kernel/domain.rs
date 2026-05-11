@@ -1,6 +1,8 @@
 use crate::shared_kernel::auditable::Auditable;
 use crate::shared_kernel::domain_event::{DomainEvent, StoredEvent};
 use crate::shared_kernel::errors::DomainError;
+#[cfg(feature = "mongo")]
+use bson::Bson;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use uuid::Uuid;
@@ -23,6 +25,21 @@ impl Default for EntityId {
         Self(Uuid::nil())
     }
 }
+
+#[cfg(feature = "mongo")]
+impl From<EntityId> for Bson {
+    fn from(id: EntityId) -> Self {
+        Bson::String(id.as_uuid().to_string())
+    }
+}
+
+#[cfg(feature = "mongo")]
+impl From<EntityId> for bson::Uuid {
+    fn from(id: EntityId) -> Self {
+        bson::Uuid::from_bytes(id.as_uuid().into_bytes())
+    }
+}
+
 
 impl std::fmt::Display for EntityId {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

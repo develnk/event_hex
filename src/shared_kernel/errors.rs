@@ -226,3 +226,9 @@ impl From<DomainEventHandlerError> for ProjectionError {
     }
 }
 
+#[cfg(feature = "mongo")]
+impl From<mongodb::error::Error> for ProjectionError {
+    fn from(value: mongodb::error::Error) -> Self {
+        ProjectionError::StoreProjectionError(value.to_string())
+    }
+}
