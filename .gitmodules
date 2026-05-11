@@ -1,3 +1,4 @@
 [submodule "examples"]
+    active = true
 	path = examples
 	url = git@github.com:develnk/event_hex_examples.git
