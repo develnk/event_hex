@@ -1,7 +1,7 @@
+use crate::application::ports::cqrs::Query;
+use crate::shared_kernel::domain_event::DomainEvent;
 use thiserror::Error;
 use uuid::Uuid;
-use crate::cqrs::Query;
-use crate::domain_event::DomainEvent;
 
 #[derive(Error, Debug)]
 pub enum EventHexError {
@@ -71,7 +71,7 @@ pub enum CommandHandlerError {
     #[error("Generic Command Handler error: {0}")]
     GenericCommandHandler(String),
 
-    #[error("Found event store error during the command execution: {0}")]
+    #[error("Found event event_store error during the command execution: {0}")]
     EventStoreError(#[from] EventStoreError),
 
     #[error("Found domain error during the command execution: {0}")]
@@ -111,14 +111,16 @@ pub enum EventStoreError {
     #[error("Ошибка во время сериализации события/агрегата")]
     SerializationError(),
 
-    #[error("Проверка целостности события под номером: {version} выявила ошибку для агрегата {aggregate_type}: {aggregate_id}")]
+    #[error("Проверка целостности события под номером: {version} выявила ошибку для агрегата {aggregate_type}: {aggregate_id}"
+    )]
     EventChainVerifyError {
         aggregate_id: Uuid,
         aggregate_type: String,
         version: u32,
     },
 
-    #[error("Ошибка сериалзации/хеширования события под номером: {version} для агрегата {aggregate_type}:{aggregate_id}")]
+    #[error("Ошибка сериалзации/хеширования события под номером: {version} для агрегата {aggregate_type}:{aggregate_id}"
+    )]
     EventChainSerializeError {
         aggregate_id: Uuid,
         aggregate_type: String,
@@ -134,7 +136,7 @@ pub enum EventStoreError {
     #[error("Event Store end of transaction error")]
     EndTransactionError,
 
-    #[error("Error in the event store: {0}")]
+    #[error("Error in the event event_store: {0}")]
     StoreError(String),
 
     #[error("Ошибка в хранилище снапшотов: {0}")]
@@ -156,7 +158,8 @@ pub enum DomainError {
     #[error("Aggregate not found: {aggregate_type}:{aggregate_id}")]
     AggregateNotFound { aggregate_id: Uuid, aggregate_type: String },
 
-    #[error("Concurrency conflict for aggregate {aggregate_type}:{aggregate_id} expected version {expected}, found {actual}")]
+    #[error("Concurrency conflict for aggregate {aggregate_type}:{aggregate_id} expected version {expected}, found {actual}"
+    )]
     ConcurrencyConflict {
         aggregate_id: Uuid,
         aggregate_type: String,

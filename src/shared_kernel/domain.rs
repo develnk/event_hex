@@ -1,11 +1,9 @@
-use anyhow::anyhow;
-use bson::Bson;
-use serde::Serialize;
+use crate::shared_kernel::auditable::Auditable;
+use crate::shared_kernel::domain_event::{DomainEvent, StoredEvent};
+use crate::shared_kernel::errors::DomainError;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use uuid::Uuid;
-use crate::auditable::Auditable;
-use crate::domain_event::{DomainEvent, StoredEvent};
-use crate::errors::DomainError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct EntityId(Uuid);
@@ -44,26 +42,6 @@ impl From<EntityId> for Uuid {
     }
 }
 
-impl From<EntityId> for Bson {
-    fn from(id: EntityId) -> Self {
-        Bson::String(id.as_uuid().to_string())
-    }
-}
-
-impl From<EntityId> for bson::Uuid {
-    fn from(id: EntityId) -> Self {
-        bson::Uuid::from_bytes(id.as_uuid().into_bytes())
-    }
-}
-
-impl std::str::FromStr for EntityId {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(Uuid::parse_str(s).map_err(|e| anyhow!("Invalid UUID: {}", e))?))
-    }
-}
-
 pub trait AggregateRoot: Sized + Send + Sync + Serialize {
     type Event: DomainEvent + Clone + Serialize + DeserializeOwned;
 
@@ -78,7 +56,7 @@ pub trait AggregateRoot: Sized + Send + Sync + Serialize {
 
     // Конвертация события хранящегося в БД в доменное событие.
     fn convert_to_domain_event(stored_event: StoredEvent) -> Result<Self::Event, DomainError> {
-        let mut val = stored_event.event.event_data;
+        let mut val = stored_event.event.payload;
         // Добавляем поле типа прямо в объект данных, чтобы десериализовать весь enum разом
         if let Some(obj) = val.as_object_mut() {
             obj.insert(
@@ -154,8 +132,6 @@ impl<A: AggregateRoot> AggregateContainer<A> {
         for stored_event in after_events {
             let domain_event = A::convert_to_domain_event(stored_event.to_owned())?;
             self.aggregate.apply_event(domain_event);
-            //self.push_event(domain_event);
-            //self.aggregate.set_version(stored_event.event.sequence_number);
         }
 
         Ok(())

@@ -2,23 +2,83 @@
 name = "event_hex"
 version = "0.1.0"
 edition = "2024"
-description = ""
-keywords = []
+description = "A library that helps implement hexagonal architecture + Event Sourcing + CQRS following DDD"
+keywords = ["hexagonal", "architecture", "ddd", "event-sourcing", "cqrs"]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = ""
+rust-version = "1.95.0"
 
 [dependencies]
-derive-getters = "0.5.0"
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"], optional = true }
+# Serialization/Deserialization
 serde = { version = "1.0.228", features = ["derive"] }
-typed-builder = "0.23.2"
-bson = { version = "3.1.0", features = ["uuid-1", "serde_with-3", "serde"] }
-uuid = { version = "1.23.0", features = ["serde", "v4", "fast-rng", "v7"] }
-anyhow = "1.0.102"
+serde_with = { version = "3.20.0" }
+serde_json = "1.0.149"
+# Uuid generation
+uuid = { version = "1.23.1", features = ["serde", "v4", "fast-rng", "v7"] }
+# Time
 chrono = { version = "0.4.44", features = ["serde"] }
+# Build async trait
+async-trait = "0.1.89"
+# Builder pattern
+typed-builder = { version = "0.23.2", optional = true }
+# Sql library for async impl
+sqlx = { version = "0.8.0", features = ["runtime-tokio-native-tls", "uuid", "json", "chrono"], optional = true }
+bb8 = "0.9.1"
+
+# MongoDB
+bson = { version = "3.1.0", features = ["uuid-1", "serde_with-3", "serde"], optional = true }
+mongodb = { version = "3.6.0", features = ["bson-3"], optional = true }
+
+# Kafka library
+rdkafka = { version = "0.39.0", features = ["ssl-vendored"], optional = true }
+# Rabbit library
+lapin = { version = "4.7.2", optional = true }
+# Base
 erased-serde = "0.4.10"
 sha2 = "0.11.0"
-serde_with = { version = "3.18.0" }
-serde_json = "1.0.149"
-async-trait = "0.1.89"
 bincode = { version = "2.0.1", features = ["serde"] }
 thiserror = "2.0.18"
 downcast-rs = "2.0.2"
 futures = "0.3.32"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1.52.3", features = ["full"] }
+mockall = "0.14"
+
+[features]
+default = []
+postgres = ["sqlx", "sqlx/postgres", "typed-builder", "tokio"]
+mongo = ["mongodb", "bson"]
+kafka = ["rdkafka", "typed-builder"]
+rabbit = ["lapin", "typed-builder"]
+
+[profile.dev]
+debug = true
+overflow-checks = true
+debug-assertions = true
+opt-level = 0
+lto = false
+panic = "unwind"
+strip = "none"
+incremental = true
+codegen-units = 256
+rpath = false
+
+[profile.release]
+# Disable all debug information
+debug = false
+# Use abort instead of unwind for smaller code
+panic = "abort"
+# Maximum optimization
+lto = "fat"
+# Optimize for size
+opt-level = 3
+# This removes a few hundred bytes from the final exec size
+codegen-units = 1
+# Strips debug info.
+strip = "symbols"
+debug-assertions = false
+overflow-checks = false

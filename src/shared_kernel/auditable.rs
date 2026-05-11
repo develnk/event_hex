@@ -1,17 +1,12 @@
-use bson::serde_helpers::uuid_1;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use uuid::Uuid;
 
-#[serde_as]
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Auditable {
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
-    #[serde_as(as = "uuid_1::AsBinary")]
     created_by: Uuid,
-    #[serde_as(as = "uuid_1::AsBinary")]
     updated_by: Uuid,
     deleted: bool,
 }

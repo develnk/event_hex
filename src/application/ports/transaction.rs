@@ -1,39 +1,31 @@
+use crate::shared_kernel::errors::EventHexError;
 use async_trait::async_trait;
 use futures::future::BoxFuture;
 use std::any::Any;
-use crate::errors::EventHexError;
 
-// Псевдоним для стертого типа
+/// Alias for erased type.
 pub type ErasedResult = Box<dyn Any + Send>;
 
-// Абстрактный контекст транзакции (чтобы не тянуть типы MongoDB в домен)
+/// Abstract transaction context.
 #[async_trait]
 pub trait TransactionContext: Send {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-pub type TransactionHandler = Box<
-    dyn for<'a> FnOnce(
-            &'a mut dyn TransactionContext,
-        ) -> BoxFuture<'a, Result<ErasedResult, EventHexError>>
-        + Send,
->;
+pub type TransactionHandler = Box<dyn for<'a> FnOnce(&'a mut dyn TransactionContext) -> BoxFuture<'a, Result<ErasedResult, EventHexError>> + Send>;
 
-// Порт для управления транзакциями
+/// Port for transaction management.
 #[async_trait]
 pub trait TransactionManager: Send + Sync {
     // Используем TransactionHandler<'a> с временем жизни из аргумента
     async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError>;
 }
 
-// Добавляем удобный интерфейс для dyn TransactionManager
 impl dyn TransactionManager {
     pub async fn run<T, F>(&self, f: F) -> Result<T, EventHexError>
     where
         T: Any + Send + 'static,
-        F: FnOnce(&mut dyn TransactionContext) -> BoxFuture<'_, Result<T, EventHexError>>
-            + Send
-            + 'static,
+        F: FnOnce(&mut dyn TransactionContext) -> BoxFuture<'_, Result<T, EventHexError>> + Send + 'static,
     {
         // Оборачиваем пользовательский handler в ErasedResult
         let handler: TransactionHandler = Box::new(|ctx| {
@@ -46,7 +38,7 @@ impl dyn TransactionManager {
 
         let erased_result = self.run_transaction(handler).await?;
 
-        // Пытаемся привести результат к нужному типу T
+        // Attempting to cast the result to the required type T
         erased_result
             .downcast::<T>()
             .map(|boxed_t| *boxed_t)

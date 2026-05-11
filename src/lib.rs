@@ -1,7 +1,7 @@
-pub mod domain_event;
-pub mod errors;
-pub mod cqrs;
-pub mod transaction;
-pub mod auditable;
-pub mod domain;
-pub mod buses;
+pub mod application;
+pub mod infrastructure;
+pub mod shared_kernel;
+
+pub mod types {
+    pub type SequenceNumber = u32;
+}

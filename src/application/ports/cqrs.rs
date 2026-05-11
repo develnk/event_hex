@@ -1,11 +1,11 @@
+use crate::application::ports::transaction::TransactionContext;
+use crate::shared_kernel::domain::EntityId;
+use crate::shared_kernel::domain_event::DomainEvent;
+use crate::shared_kernel::errors::{CommandHandlerError, QueryHandlerError};
 use async_trait::async_trait;
-use downcast_rs::{Downcast, impl_downcast};
+use downcast_rs::{impl_downcast, Downcast};
 use std::any::Any;
 use std::fmt::Debug;
-use crate::domain_event::DomainEvent;
-use crate::errors::{CommandHandlerError, QueryHandlerError};
-use crate::domain::EntityId;
-use crate::transaction::TransactionContext;
 
 // Трейт для команд.
 pub trait Command: Downcast + Send + Sync + Debug {}
@@ -20,9 +20,7 @@ where
     // Команда меняет состояние агрегата. В результате этого процесса агрегат генерирует массив
     // доменных событий, которые нужно будет опубликовать в application слое.
     // В некоторых ситуациях полезно возвращать id агрегата, с которым взаимодействовала команда.
-    async fn handle(
-        &self, command: C, ctx: Option<&mut dyn TransactionContext>,
-    ) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
+    async fn handle(&self, command: C, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
 }
 
 // Фабрика будет создавать конкретный CommandHandler.
@@ -47,9 +45,7 @@ pub trait QueryHandler<Q>: Send + Sync + 'static
 where
     Q: Query,
 {
-    async fn handle(
-        &self, query: Q,
-    ) -> Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError>;
+    async fn handle(&self, query: Q) -> Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError>;
 }
 
 #[async_trait]
