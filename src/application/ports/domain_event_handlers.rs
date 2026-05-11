@@ -1,5 +1,6 @@
 use crate::application::ports::projections::projection::ProjectionRepository;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 #[derive(Clone, Debug)]
 pub struct ProjectionUpdaterEventHandler {
