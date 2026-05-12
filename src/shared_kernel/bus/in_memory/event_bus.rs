@@ -5,15 +5,15 @@ use async_trait::async_trait;
 use futures::FutureExt;
 use std::any::type_name_of_val;
 use std::pin::Pin;
-use std::sync::RwLock;
 use std::{any::TypeId, collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 
 #[async_trait]
 pub trait EventBusPort: Send + Sync {
     async fn register_handler<E, F>(&self, factory: F)
     where
         E: DomainEvent + Clone + Send + Sync + 'static,
-        F: DomainEventHandlerFactory<E> + 'static,;
+        F: DomainEventHandlerFactory<E> + 'static;
     async fn publish(&self, event: &dyn DomainEvent) -> Result<(), DomainEventHandlerError>;
 }
 
@@ -60,14 +60,14 @@ impl EventBusPort for EventBus {
                 })
             });
 
-        let mut handlers = self.handlers.write().unwrap();
+        let mut handlers = self.handlers.write().await;
         handlers.entry(type_id).or_insert_with(Vec::new).push(dispatcher);
     }
 
     async fn publish(&self, event: &dyn DomainEvent) -> Result<(), DomainEventHandlerError> {
         let type_id = event.event_type_id();
         let dispatchers = {
-            let guard = self.handlers.read().unwrap();
+            let guard = self.handlers.read().await;
             guard.get(&type_id)
                 .ok_or(DomainEventHandlerNotRegistered(type_name_of_val(&*event).to_string()))?
                 .clone()

@@ -9,7 +9,8 @@ use std::any;
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::pin::Pin;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 #[async_trait]
 pub trait CommandBusPort: Send + Sync {
@@ -67,15 +68,13 @@ impl CommandBusPort for CommandBus {
                 handler.handle(*command, ctx).await
             })
         });
-        self.handlers.write().unwrap().insert(type_id, dispatcher);
+        self.handlers.write().await.insert(type_id, dispatcher);
     }
 
-    async fn dispatch(
-        &self, command: Box<dyn Command>, ctx: Option<&mut dyn TransactionContext>,
-    ) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
+    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
         let type_id = (*command).type_id();
         let dispatcher = {
-            let guard = self.handlers.read().unwrap();
+            let guard = self.handlers.read().await;
             guard.get(&type_id)
                 .ok_or(CommandHandlerNotRegistered(any::type_name_of_val(&*command).to_string()))?
                 .clone()

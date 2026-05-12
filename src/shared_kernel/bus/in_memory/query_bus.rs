@@ -6,7 +6,8 @@ use std::any;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::pin::Pin;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 #[async_trait]
 pub trait QueryBusPort: Send + Sync {
@@ -64,13 +65,13 @@ impl QueryBusPort for QueryBus {
                 handler.handle(*query).await
             })
         });
-        self.handlers.write().unwrap().insert(type_id, dispatcher);
+        self.handlers.write().await.insert(type_id, dispatcher);
     }
 
     async fn dispatch(&self, query: Box<dyn Query>) -> Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError> {
         let type_id = (*query).type_id();
         let dispatcher = {
-            let guard = self.handlers.read().unwrap();
+            let guard = self.handlers.read().await;
             guard.get(&type_id)
                 .ok_or(QueryHandlerNotRegistered(any::type_name_of_val(&*query).to_string()))?
                 .clone()

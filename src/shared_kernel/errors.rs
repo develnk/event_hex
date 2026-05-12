@@ -82,6 +82,13 @@ pub enum CommandHandlerError {
     DomainError(#[from] DomainError),
 }
 
+impl From<EventHexError> for CommandHandlerError {
+    fn from(error: EventHexError) -> Self {
+        Self::GenericCommandHandler(error.to_string())
+    }
+}
+
+
 #[derive(Error, Debug, Clone)]
 pub enum QueryHandlerError {
     #[error("No handler registered for query {0}")]

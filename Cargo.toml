@@ -12,7 +12,7 @@ rust-version = "1.95.0"
 [dependencies]
 tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] }
 # Serialization/Deserialization
-serde = { version = "1.0.228", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive", "serde_derive"] }
 serde_with = { version = "3.20.0" }
 serde_json = "1.0.149"
 # Uuid generation
@@ -38,6 +38,7 @@ lapin = { version = "4.7.2", optional = true }
 # Base
 derive-getters = "0.5.0"
 erased-serde = "0.4.10"
+config = { version = "0.15.22", optional = true }
 sha2 = "0.11.0"
 bincode = { version = "2.0.1", features = ["serde"] }
 thiserror = "2.0.18"
@@ -50,9 +51,9 @@ tokio = { version = "1.52.3", features = ["full"] }
 mockall = "0.14"
 
 [[example]]
-name = "example"
-path = "examples"
-required-features = []
+name = "structure-folder"
+path = "examples/structure_folder/main.rs"
+required-features = ["mongo", "config"]
 
 [features]
 default = []
