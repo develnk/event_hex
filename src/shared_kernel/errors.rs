@@ -1,5 +1,5 @@
 use crate::application::ports::cqrs::Query;
-use crate::shared_kernel::domain_event::DomainEvent;
+use crate::domain::domain_event::DomainEvent;
 use thiserror::Error;
 use uuid::Uuid;
 

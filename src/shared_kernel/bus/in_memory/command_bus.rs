@@ -1,7 +1,7 @@
 use crate::application::ports::cqrs::{Command, CommandHandlerFactory};
 use crate::application::ports::transaction::TransactionContext;
-use crate::shared_kernel::domain::EntityId;
-use crate::shared_kernel::domain_event::DomainEvent;
+use crate::domain::domain::EntityId;
+use crate::domain::domain_event::DomainEvent;
 use crate::shared_kernel::errors::CommandHandlerError;
 use crate::shared_kernel::errors::CommandHandlerError::{CommandHandlerDownCast, CommandHandlerNotRegistered};
 use async_trait::async_trait;

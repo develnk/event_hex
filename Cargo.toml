@@ -1,12 +1,16 @@
 [package]
 name = "event_hex"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
-description = "A library that helps implement hexagonal architecture + Event Sourcing + CQRS following DDD"
+description = "A pragmatic Rust toolkit for Domain-Driven Design with first-class support for event sourcing and CQRS."
 keywords = ["hexagonal", "architecture", "ddd", "event-sourcing", "cqrs"]
+categories = ["data-structures", "asynchronous", "rust-patterns"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
+authors = ["develnk <develnk@gmail.com>"]
 repository = "https://github.com/develnk/event_hex.git"
+homepage = "https://github.com/develnk/event_hex.git"
+documentation = "https://docs.rs/event_hex"
 rust-version = "1.95.0"
 
 [dependencies]
@@ -49,11 +53,6 @@ tracing = "0.1"
 [dev-dependencies]
 tokio = { version = "1.52.3", features = ["full"] }
 mockall = "0.14"
-
-[[example]]
-name = "structure-folder"
-path = "examples/structure_folder/main.rs"
-required-features = ["mongo", "config"]
 
 [features]
 default = []

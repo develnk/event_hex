@@ -1,8 +1,8 @@
 use crate::application::ports::event_store_repository::EventStoreRepository;
 use crate::application::ports::transaction::TransactionContext;
+use crate::domain::domain::{AggregateContainer, AggregateRoot, EntityId};
+use crate::domain::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
 use crate::infrastructure::event_store::storage::EventStoreStorage;
-use crate::shared_kernel::domain::{AggregateContainer, AggregateRoot, EntityId};
-use crate::shared_kernel::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
 use crate::shared_kernel::errors::EventStoreError;
 use async_trait::async_trait;
 use chrono::Utc;

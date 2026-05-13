@@ -1,5 +1,5 @@
+use crate::domain::domain_event::{DomainEvent, StoredEvent};
 use crate::shared_kernel::auditable::Auditable;
-use crate::shared_kernel::domain_event::{DomainEvent, StoredEvent};
 use crate::shared_kernel::errors::DomainError;
 #[cfg(feature = "mongo")]
 use bson::Bson;

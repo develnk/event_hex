@@ -1,6 +1,6 @@
 use crate::application::ports::transaction::TransactionContext;
-use crate::shared_kernel::domain::{AggregateContainer, AggregateRoot, EntityId};
-use crate::shared_kernel::domain_event::{DomainEvent, Snapshot, StoredEvent};
+use crate::domain::domain::{AggregateContainer, AggregateRoot, EntityId};
+use crate::domain::domain_event::{DomainEvent, Snapshot, StoredEvent};
 use crate::shared_kernel::errors::EventStoreError;
 use async_trait::async_trait;
 

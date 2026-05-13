@@ -1,5 +1,5 @@
-use crate::shared_kernel::domain::EntityId;
-use crate::shared_kernel::domain_event::DomainEvent;
+use crate::domain::domain::EntityId;
+use crate::domain::domain_event::DomainEvent;
 use crate::shared_kernel::errors::ProjectionError;
 use async_trait::async_trait;
 use std::any::Any;

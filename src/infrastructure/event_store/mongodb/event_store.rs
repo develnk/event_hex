@@ -1,8 +1,8 @@
 use crate::application::ports::transaction::TransactionContext;
+use crate::domain::domain::{AggregateRoot, EntityId};
+use crate::domain::domain_event::{Snapshot, StoredEvent};
 use crate::infrastructure::event_store::storage::EventStoreStorage;
 use crate::infrastructure::persistence::mongodb::mongo_transaction::MongoContext;
-use crate::shared_kernel::domain::{AggregateRoot, EntityId};
-use crate::shared_kernel::domain_event::{Snapshot, StoredEvent};
 use crate::shared_kernel::errors::DomainError;
 use crate::shared_kernel::errors::EventStoreError;
 use async_trait::async_trait;

@@ -1,6 +1,6 @@
 use crate::application::ports::transaction::TransactionContext;
-use crate::shared_kernel::domain::EntityId;
-use crate::shared_kernel::domain_event::DomainEvent;
+use crate::domain::domain::EntityId;
+use crate::domain::domain_event::DomainEvent;
 use crate::shared_kernel::errors::{CommandHandlerError, QueryHandlerError};
 use async_trait::async_trait;
 use downcast_rs::{impl_downcast, Downcast};

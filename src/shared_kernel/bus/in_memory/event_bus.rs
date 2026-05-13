@@ -1,4 +1,4 @@
-use crate::shared_kernel::domain_event::{DomainEvent, DomainEventHandlerFactory};
+use crate::domain::domain_event::{DomainEvent, DomainEventHandlerFactory};
 use crate::shared_kernel::errors::DomainEventHandlerError;
 use crate::shared_kernel::errors::DomainEventHandlerError::DomainEventHandlerNotRegistered;
 use async_trait::async_trait;

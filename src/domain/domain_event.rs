@@ -1,4 +1,4 @@
-use crate::shared_kernel::domain::{AggregateRoot, EntityId};
+use crate::domain::domain::{AggregateRoot, EntityId};
 use crate::shared_kernel::errors::DomainEventHandlerError;
 use crate::types::SequenceNumber;
 use async_trait::async_trait;
