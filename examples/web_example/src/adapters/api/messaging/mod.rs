@@ -1,0 +1,3 @@
+/*
+* Adapters for message queues.
+*/
