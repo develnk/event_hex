@@ -1,3 +1,4 @@
+use crate::bus::ports::event::EventBusPort;
 use crate::domain_event::{DomainEvent, DomainEventHandlerFactory};
 use crate::errors::DomainEventHandlerError;
 use crate::errors::DomainEventHandlerError::DomainEventHandlerNotRegistered;
@@ -7,15 +8,6 @@ use std::any::type_name_of_val;
 use std::pin::Pin;
 use std::{any::TypeId, collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
-
-#[async_trait]
-pub trait EventBusPort: Send + Sync {
-    async fn register_handler<E, F>(&self, factory: F)
-    where
-        E: DomainEvent + Clone + Send + Sync + 'static,
-        F: DomainEventHandlerFactory<E> + 'static;
-    async fn publish(&self, event: &dyn DomainEvent) -> Result<(), DomainEventHandlerError>;
-}
 
 type GenericDomainEventDispatcher = Arc<dyn Send + Sync + Fn(&dyn DomainEvent) -> Pin<Box<dyn Future<Output=()> + Send>>>;
 

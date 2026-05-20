@@ -1,3 +1,4 @@
+use crate::bus::ports::query::QueryBusPort;
 use crate::cqrs::{Query, QueryHandlerFactory};
 use crate::errors::QueryHandlerError;
 use crate::errors::QueryHandlerError::QueryHandlerNotRegistered;
@@ -8,15 +9,6 @@ use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-#[async_trait]
-pub trait QueryBusPort: Send + Sync {
-    async fn register_handler<Q, F>(&self, factory: F)
-    where
-        Q: Query + 'static,
-        F: QueryHandlerFactory<Q> + 'static;
-    async fn dispatch(&self, query: Box<dyn Query>) -> Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError>;
-}
 
 type GenericQueryDispatcher = Arc<dyn Send + Sync + Fn(Box<dyn Query>) -> Pin<Box<dyn Future<Output=Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError>> + Send>>>;
 

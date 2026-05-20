@@ -3,12 +3,9 @@ use crate::application::dto::user::UserDTO;
 use crate::application::ports::projections::models::access_account::AccessAccountProjection;
 use crate::domain::identity_access_management::identity::ports::read_repository_ports::access_account_projection::AccessAccountReadProjectionRepository;
 use crate::shared_kernel::errors::AppError;
-use event_hex::bus::in_memory::command_bus::{CommandBus, CommandBusPort};
-use event_hex::bus::in_memory::event_bus::{EventBus, EventBusPort};
-use event_hex::bus::in_memory::query_bus::QueryBus;
-use event_hex::domain_event::DomainEvent;
 use event_hex::errors::EventHexError;
 use event_hex::persistence::transaction::EventTransactionManager;
+use event_hex::prelude::*;
 use std::sync::Arc;
 use uuid::Uuid;
 

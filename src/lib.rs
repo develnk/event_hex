@@ -11,9 +11,12 @@ pub mod cqrs;
 pub mod projection;
 
 pub mod prelude {
-    pub use crate::bus::in_memory::command_bus::{CommandBus, CommandBusPort};
-    pub use crate::bus::in_memory::event_bus::{EventBus, EventBusPort};
-    pub use crate::bus::in_memory::query_bus::{QueryBus, QueryBusPort};
+    pub use crate::bus::in_memory::command_bus::CommandBus;
+    pub use crate::bus::in_memory::event_bus::EventBus;
+    pub use crate::bus::in_memory::query_bus::QueryBus;
+    pub use crate::bus::ports::command::CommandBusPort;
+    pub use crate::bus::ports::event::EventBusPort;
+    pub use crate::bus::ports::query::QueryBusPort;
     pub use crate::cqrs::{Command, CommandHandler, CommandHandlerFactory, Query, QueryHandler, QueryHandlerFactory};
     pub use crate::domain::{AggregateContainer, AggregateRoot, EntityId};
     pub use crate::domain_event::{DomainEvent, DomainEventHandler, DomainEventHandlerFactory, Snapshot, StoredEvent};

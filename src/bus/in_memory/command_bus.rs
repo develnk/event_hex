@@ -1,3 +1,4 @@
+use crate::bus::ports::command::CommandBusPort;
 use crate::cqrs::{Command, CommandHandlerFactory};
 use crate::domain::EntityId;
 use crate::domain_event::DomainEvent;
@@ -11,15 +12,6 @@ use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-#[async_trait]
-pub trait CommandBusPort: Send + Sync {
-    async fn register<C, F>(&self, factory: F)
-    where
-        C: Command + 'static,
-        F: CommandHandlerFactory<C> + 'static;
-    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
-}
 
 type GenericCommandDispatcher = Arc<dyn Send + Sync + for<'a> Fn(Box<dyn Command>, Option<&'a mut dyn EventTransactionContext>) -> Pin<Box<dyn Future<Output=Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>> + Send + 'a>>>;
 
