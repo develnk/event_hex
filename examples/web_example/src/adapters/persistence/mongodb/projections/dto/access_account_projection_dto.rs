@@ -7,9 +7,9 @@ use crate::domain::identity_access_management::identity::event::access_account_e
 };
 use bson::serde_helpers::uuid_1;
 use derive_getters::Getters;
-use event_hex::application::ports::projections::projection::ProjectionDtoEventApplier;
-use event_hex::domain::domain_event::DomainEvent;
-use event_hex::shared_kernel::errors::ProjectionError;
+use event_hex::domain_event::DomainEvent;
+use event_hex::errors::ProjectionError;
+use event_hex::projection::ProjectionDtoEventApplier;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use uuid::Uuid;

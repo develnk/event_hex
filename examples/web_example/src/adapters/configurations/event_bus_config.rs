@@ -1,5 +1,5 @@
-use event_hex::application::ports::domain_event_handlers::ProjectionUpdaterEventHandlerFactory;
-use event_hex::shared_kernel::bus::in_memory::event_bus::{EventBus, EventBusPort};
+use event_hex::bus::in_memory::event_bus::{EventBus, EventBusPort};
+use event_hex::domain_event_handlers::ProjectionUpdaterEventHandlerFactory;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
 

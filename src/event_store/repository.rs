@@ -1,9 +1,9 @@
-use crate::application::ports::event_store_repository::EventStoreRepository;
-use crate::application::ports::transaction::TransactionContext;
-use crate::domain::domain::{AggregateContainer, AggregateRoot, EntityId};
-use crate::domain::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
-use crate::infrastructure::event_store::storage::EventStoreStorage;
-use crate::shared_kernel::errors::EventStoreError;
+use crate::domain::{AggregateContainer, AggregateRoot, EntityId};
+use crate::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
+use crate::errors::EventStoreError;
+use crate::event_store::storage::EventStoreStorage;
+use crate::event_store_repository::EventStoreRepository;
+use crate::persistence::transaction::EventTransactionContext;
 use async_trait::async_trait;
 use chrono::Utc;
 use serde::de::DeserializeOwned;
@@ -34,7 +34,7 @@ impl<A> EventStoreRepository<A> for EventStoreRepositoryImpl<A>
 where
     A: AggregateRoot + DeserializeOwned + 'static,
 {
-    async fn save_aggregate(&self, ctx: &mut dyn TransactionContext, container: AggregateContainer<A>) -> Result<(), EventStoreError>
+    async fn save_aggregate(&self, ctx: &mut dyn EventTransactionContext, container: AggregateContainer<A>) -> Result<(), EventStoreError>
     where
         A::Event: DomainEvent + Serialize,
     {
@@ -95,7 +95,7 @@ where
         Ok(())
     }
 
-    async fn load_aggregate(&self, ctx: &mut dyn TransactionContext, id: &EntityId) -> Result<Option<AggregateContainer<A>>, EventStoreError> {
+    async fn load_aggregate(&self, ctx: &mut dyn EventTransactionContext, id: &EntityId) -> Result<Option<AggregateContainer<A>>, EventStoreError> {
         let snapshot_result: Option<Snapshot<A>> = self.storage.find_latest_snapshot(ctx, id).await?;
         let version = snapshot_result.as_ref().map_or(0, |s| s.version);
         let events = <Self as EventStoreRepository<A>>::get_events_since_version(self, ctx, id, version).await?;
@@ -117,11 +117,11 @@ where
         }
     }
 
-    async fn get_events_since_version(&self, ctx: &mut dyn TransactionContext, id: &EntityId, min_version: u32) -> Result<Vec<StoredEvent>, EventStoreError> {
+    async fn get_events_since_version(&self, ctx: &mut dyn EventTransactionContext, id: &EntityId, min_version: u32) -> Result<Vec<StoredEvent>, EventStoreError> {
         self.storage.find_events_since_version(ctx, id, min_version).await
     }
 
-    async fn get_latest_snapshot(&self, ctx: &mut dyn TransactionContext, id: &EntityId) -> Result<Option<Snapshot<A>>, EventStoreError> {
+    async fn get_latest_snapshot(&self, ctx: &mut dyn EventTransactionContext, id: &EntityId) -> Result<Option<Snapshot<A>>, EventStoreError> {
         self.storage.find_latest_snapshot(ctx, id).await
     }
 }

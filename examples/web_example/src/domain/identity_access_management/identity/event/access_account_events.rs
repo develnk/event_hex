@@ -3,8 +3,8 @@ use crate::{
     shared_kernel::model::common::{Permissions, Role},
 };
 use derive_getters::Getters;
-use event_hex::domain::domain::EntityId;
-use event_hex::domain::domain_event::DomainEvent;
+use event_hex::domain::EntityId;
+use event_hex::domain_event::DomainEvent;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::sync::Arc;

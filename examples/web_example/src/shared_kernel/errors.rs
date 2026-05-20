@@ -1,4 +1,4 @@
-use event_hex::shared_kernel::errors::EventHexError;
+use event_hex::errors::EventHexError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

@@ -1,4 +1,4 @@
-use crate::shared_kernel::errors::EventHexError;
+use crate::errors::EventHexError;
 use async_trait::async_trait;
 use futures::future::BoxFuture;
 use std::any::Any;
@@ -8,27 +8,27 @@ pub type ErasedResult = Box<dyn Any + Send>;
 
 /// Abstract transaction context.
 #[async_trait]
-pub trait TransactionContext: Send {
+pub trait EventTransactionContext: Send {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-pub type TransactionHandler = Box<dyn for<'a> FnOnce(&'a mut dyn TransactionContext) -> BoxFuture<'a, Result<ErasedResult, EventHexError>> + Send>;
+pub type EventTransactionHandler = Box<dyn for<'a> FnOnce(&'a mut dyn EventTransactionContext) -> BoxFuture<'a, Result<ErasedResult, EventHexError>> + Send>;
 
 /// Port for transaction management.
 #[async_trait]
-pub trait TransactionManager: Send + Sync {
+pub trait EventTransactionManager: Send + Sync {
     // Use TransactionHandler<'a> with the lifetime from the argument
-    async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError>;
+    async fn run_transaction(&self, handler: EventTransactionHandler) -> Result<ErasedResult, EventHexError>;
 }
 
-impl dyn TransactionManager {
+impl dyn EventTransactionManager {
     pub async fn run<T, F>(&self, f: F) -> Result<T, EventHexError>
     where
         T: Any + Send + 'static,
-        F: FnOnce(&mut dyn TransactionContext) -> BoxFuture<'_, Result<T, EventHexError>> + Send + 'static,
+        F: FnOnce(&mut dyn EventTransactionContext) -> BoxFuture<'_, Result<T, EventHexError>> + Send + 'static,
     {
         // Wrap the user-defined handler in ErasedResult
-        let handler: TransactionHandler = Box::new(|ctx| {
+        let handler: EventTransactionHandler = Box::new(|ctx| {
             Box::pin(async move {
                 let res = f(ctx).await?;
                 let erased: ErasedResult = Box::new(res);

@@ -1,6 +1,6 @@
-use crate::application::ports::cqrs::{Query, QueryHandlerFactory};
-use crate::shared_kernel::errors::QueryHandlerError;
-use crate::shared_kernel::errors::QueryHandlerError::QueryHandlerNotRegistered;
+use crate::cqrs::{Query, QueryHandlerFactory};
+use crate::errors::QueryHandlerError;
+use crate::errors::QueryHandlerError::QueryHandlerNotRegistered;
 use async_trait::async_trait;
 use std::any;
 use std::any::{Any, TypeId};

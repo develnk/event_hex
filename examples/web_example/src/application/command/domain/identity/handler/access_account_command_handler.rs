@@ -7,14 +7,14 @@ use crate::{
     domain::identity_access_management::identity::aggregate::access_account::AccessAccountAggregateRoot,
 };
 use async_trait::async_trait;
-use event_hex::application::ports::cqrs::{CommandHandler, CommandHandlerFactory};
-use event_hex::application::ports::event_store_repository::EventStoreRepository;
-use event_hex::application::ports::transaction::TransactionContext;
-use event_hex::domain::domain::{AggregateContainer, EntityId};
-use event_hex::domain::domain_event::DomainEvent;
-use event_hex::infrastructure::event_store::mongodb::event_store::MongoEventStoreStorage;
-use event_hex::infrastructure::event_store::repository::MongoEventStoreRepository;
-use event_hex::shared_kernel::errors::{CommandHandlerError, EventHexError};
+use event_hex::cqrs::{CommandHandler, CommandHandlerFactory};
+use event_hex::domain::{AggregateContainer, EntityId};
+use event_hex::domain_event::DomainEvent;
+use event_hex::errors::{CommandHandlerError, EventHexError};
+use event_hex::event_store::mongodb::event_store::MongoEventStoreStorage;
+use event_hex::event_store::repository::MongoEventStoreRepository;
+use event_hex::event_store_repository::EventStoreRepository;
+use event_hex::persistence::transaction::EventTransactionContext;
 use mongodb::Client;
 
 pub struct AccessAccountHandler<R>
@@ -48,7 +48,7 @@ impl<R> CommandHandler<AccessAccountCommand> for AccessAccountHandler<R>
 where
     R: EventStoreRepository<AccessAccountAggregateRoot> + Send + Sync + 'static,
 {
-    async fn handle(&self, command: AccessAccountCommand, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
+    async fn handle(&self, command: AccessAccountCommand, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
         match command {
             AccessAccountCommand::CreateAccessAccountCommand { first_name, last_name, email } => {
                 let mut access_account = AccessAccountAggregateRoot::new();

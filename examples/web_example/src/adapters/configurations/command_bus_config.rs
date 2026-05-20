@@ -1,7 +1,7 @@
 use crate::adapters::configurations::db::get_initialized_mongodb_client;
 use crate::application::command::domain::identity::commands::AccessAccountCommand;
 use crate::application::command::domain::identity::handler::access_account_command_handler::AccessAccountHandlerFactory;
-use event_hex::shared_kernel::bus::in_memory::command_bus::{CommandBus, CommandBusPort};
+use event_hex::bus::in_memory::command_bus::{CommandBus, CommandBusPort};
 use std::sync::{Arc, OnceLock};
 
 static COMMAND_BUS: OnceLock<Arc<CommandBus>> = OnceLock::new();

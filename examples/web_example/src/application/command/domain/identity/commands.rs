@@ -1,4 +1,4 @@
-use event_hex::application::ports::cqrs::Command;
+use event_hex::cqrs::Command;
 use serde::{Deserialize, Serialize};
 
 use crate::{

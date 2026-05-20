@@ -1,5 +1,5 @@
-use crate::domain::domain::{AggregateRoot, EntityId};
-use crate::shared_kernel::errors::DomainEventHandlerError;
+use crate::domain::{AggregateRoot, EntityId};
+use crate::errors::DomainEventHandlerError;
 use crate::types::SequenceNumber;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};

@@ -1,5 +1,5 @@
 use derive_getters::Getters;
-use event_hex::domain::domain::EntityId;
+use event_hex::domain::EntityId;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

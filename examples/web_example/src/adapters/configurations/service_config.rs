@@ -11,7 +11,7 @@ use crate::adapters::persistence::mongodb::projections::readers::access_account_
 use crate::application::service::identity_service::IdentityApplicationService;
 use crate::domain::identity_access_management::identity::ports::read_repository_ports::access_account_projection::AccessAccountReadProjectionRepository;
 use derive_getters::Getters;
-use event_hex::infrastructure::persistence::mongodb::mongo_transaction::MongoTransactionManager;
+use event_hex::persistence::mongodb::mongo_transaction::MongoTransactionManager;
 
 static APP_STATE: OnceLock<Arc<AppState>> = OnceLock::new();
 

@@ -1,7 +1,7 @@
 use crate::application::ports::projections::models::access_account::AccessAccountProjection;
 use crate::shared_kernel::errors::AppError;
 use async_trait::async_trait;
-use event_hex::domain::domain::EntityId;
+use event_hex::domain::EntityId;
 use uuid::Uuid;
 
 #[async_trait]

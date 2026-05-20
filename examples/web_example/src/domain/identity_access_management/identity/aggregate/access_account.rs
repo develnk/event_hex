@@ -11,8 +11,8 @@ use crate::{
     shared_kernel::model::common::{Permissions, Role},
 };
 use derive_getters::Getters;
-use event_hex::domain::domain::{AggregateRoot, EntityId};
-use event_hex::shared_kernel::errors::DomainError;
+use event_hex::domain::{AggregateRoot, EntityId};
+use event_hex::errors::DomainError;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use typed_builder::TypedBuilder;

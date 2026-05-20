@@ -1,9 +1,9 @@
-use crate::application::ports::cqrs::{Command, CommandHandlerFactory};
-use crate::application::ports::transaction::TransactionContext;
-use crate::domain::domain::EntityId;
-use crate::domain::domain_event::DomainEvent;
-use crate::shared_kernel::errors::CommandHandlerError;
-use crate::shared_kernel::errors::CommandHandlerError::{CommandHandlerDownCast, CommandHandlerNotRegistered};
+use crate::cqrs::{Command, CommandHandlerFactory};
+use crate::domain::EntityId;
+use crate::domain_event::DomainEvent;
+use crate::errors::CommandHandlerError;
+use crate::errors::CommandHandlerError::{CommandHandlerDownCast, CommandHandlerNotRegistered};
+use crate::persistence::transaction::EventTransactionContext;
 use async_trait::async_trait;
 use std::any;
 use std::any::TypeId;
@@ -18,10 +18,10 @@ pub trait CommandBusPort: Send + Sync {
     where
         C: Command + 'static,
         F: CommandHandlerFactory<C> + 'static;
-    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
+    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
 }
 
-type GenericCommandDispatcher = Arc<dyn Send + Sync + for<'a> Fn(Box<dyn Command>, Option<&'a mut dyn TransactionContext>) -> Pin<Box<dyn Future<Output=Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>> + Send + 'a>>>;
+type GenericCommandDispatcher = Arc<dyn Send + Sync + for<'a> Fn(Box<dyn Command>, Option<&'a mut dyn EventTransactionContext>) -> Pin<Box<dyn Future<Output=Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>> + Send + 'a>>>;
 
 pub struct CommandBus {
     handlers: Arc<RwLock<HashMap<TypeId, GenericCommandDispatcher>>>,
@@ -55,7 +55,7 @@ impl CommandBusPort for CommandBus {
         let type_id = TypeId::of::<C>();
         let factory_arc = Arc::new(factory);
 
-        let dispatcher: GenericCommandDispatcher = Arc::new(move |command_box: Box<dyn Command>, ctx: Option<&mut dyn TransactionContext>| {
+        let dispatcher: GenericCommandDispatcher = Arc::new(move |command_box: Box<dyn Command>, ctx: Option<&mut dyn EventTransactionContext>| {
             let factory_clone = Arc::clone(&factory_arc);
 
             Box::pin(async move {
@@ -71,7 +71,7 @@ impl CommandBusPort for CommandBus {
         self.handlers.write().await.insert(type_id, dispatcher);
     }
 
-    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
+    async fn dispatch(&self, command: Box<dyn Command>, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
         let type_id = (*command).type_id();
         let dispatcher = {
             let guard = self.handlers.read().await;

@@ -1,10 +1,10 @@
-use crate::application::ports::transaction::TransactionContext;
-use crate::domain::domain::{AggregateRoot, EntityId};
-use crate::domain::domain_event::{Snapshot, StoredEvent};
-use crate::infrastructure::event_store::storage::EventStoreStorage;
-use crate::infrastructure::persistence::mongodb::mongo_transaction::MongoContext;
-use crate::shared_kernel::errors::DomainError;
-use crate::shared_kernel::errors::EventStoreError;
+use crate::domain::{AggregateRoot, EntityId};
+use crate::domain_event::{Snapshot, StoredEvent};
+use crate::errors::DomainError;
+use crate::errors::EventStoreError;
+use crate::event_store::storage::EventStoreStorage;
+use crate::persistence::mongodb::mongo_transaction::MongoContext;
+use crate::persistence::transaction::EventTransactionContext;
 use async_trait::async_trait;
 use bson::doc;
 use futures::StreamExt;
@@ -39,7 +39,7 @@ where
 {
     async fn find_last_event(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         aggregate_id: &EntityId,
         aggregate_type: &str,
     ) -> Result<Option<StoredEvent>, EventStoreError> {
@@ -68,7 +68,7 @@ where
 
     async fn insert_events(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         events: Vec<StoredEvent>,
     ) -> Result<(), EventStoreError> {
         let aggregate_id = events[0].event.aggregate_id;
@@ -117,7 +117,7 @@ where
 
     async fn delete_snapshot(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         aggregate_id: &EntityId,
         aggregate_type: &str,
     ) -> Result<(), EventStoreError> {
@@ -149,7 +149,7 @@ where
 
     async fn insert_snapshot(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         snapshot: Snapshot<A>,
     ) -> Result<(), EventStoreError> {
         let result = if let Some(mongo_ctx) = ctx.as_any_mut().downcast_mut::<MongoContext>() {
@@ -172,7 +172,7 @@ where
 
     async fn find_events_since_version(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         id: &EntityId,
         min_version: u32,
     ) -> Result<Vec<StoredEvent>, EventStoreError> {
@@ -214,7 +214,7 @@ where
 
     async fn find_latest_snapshot(
         &self,
-        ctx: &mut dyn TransactionContext,
+        ctx: &mut dyn EventTransactionContext,
         id: &EntityId,
     ) -> Result<Option<Snapshot<A>>, EventStoreError> {
         let filter = doc! { "aggregate_id": id.as_uuid() };

@@ -1,6 +1,6 @@
 use crate::domain::identity_access_management::identity::aggregate::access_account::AccessAccountAggregateRoot;
-use event_hex::domain::domain::AggregateRoot;
-use event_hex::shared_kernel::errors::DomainError;
+use event_hex::domain::AggregateRoot;
+use event_hex::errors::DomainError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Email(String);

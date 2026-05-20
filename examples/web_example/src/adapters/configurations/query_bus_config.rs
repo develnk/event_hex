@@ -1,5 +1,5 @@
 use crate::adapters::configurations::db::get_initialized_mongodb_client;
-use event_hex::shared_kernel::bus::in_memory::query_bus::QueryBus;
+use event_hex::bus::in_memory::query_bus::QueryBus;
 use std::sync::{Arc, OnceLock};
 
 static QUERY_BUS: OnceLock<Arc<QueryBus>> = OnceLock::new();

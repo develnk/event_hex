@@ -1,4 +1,4 @@
-use crate::application::ports::projections::projection::ProjectionRepository;
+use crate::projection::ProjectionRepository;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 

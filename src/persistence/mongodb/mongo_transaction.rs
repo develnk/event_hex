@@ -6,10 +6,10 @@ use mongodb::{
     ClientSession,
 };
 
-use crate::application::ports::transaction::{
-    ErasedResult, TransactionContext, TransactionHandler, TransactionManager,
+use crate::errors::EventHexError;
+use crate::persistence::transaction::{
+    ErasedResult, EventTransactionContext, EventTransactionHandler, EventTransactionManager,
 };
-use crate::shared_kernel::errors::EventHexError;
 
 // Mongo context implementation
 pub struct MongoContext {
@@ -17,7 +17,7 @@ pub struct MongoContext {
 }
 
 // Abstract transaction context implementation
-impl TransactionContext for MongoContext {
+impl EventTransactionContext for MongoContext {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
@@ -26,7 +26,7 @@ impl TransactionContext for MongoContext {
 // Context for working without transactions (standalone mode)
 struct NoopTransactionContext;
 
-impl TransactionContext for NoopTransactionContext {
+impl EventTransactionContext for NoopTransactionContext {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
@@ -60,8 +60,8 @@ impl MongoTransactionManager {
 }
 
 #[async_trait]
-impl TransactionManager for MongoTransactionManager {
-    async fn run_transaction(&self, handler: TransactionHandler) -> Result<ErasedResult, EventHexError> {
+impl EventTransactionManager for MongoTransactionManager {
+    async fn run_transaction(&self, handler: EventTransactionHandler) -> Result<ErasedResult, EventHexError> {
         if self.use_transactions {
             // Transaction logic
             let mut session = self.client.start_session().await.map_err(|e| EventHexError::MongoError(e))?;

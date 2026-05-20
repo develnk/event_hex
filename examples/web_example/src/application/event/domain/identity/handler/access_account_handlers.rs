@@ -1,11 +1,10 @@
-use crate::domain::identity_access_management::identity::event::access_account_events::AccessAccountEvents;
-
 use crate::adapters::configurations::db::get_initialized_mongodb_client;
 use crate::adapters::persistence::mongodb::projections::writers::access_account_projection::MongoAccessAccountProjectionAdapter;
+use crate::domain::identity_access_management::identity::event::access_account_events::AccessAccountEvents;
 use async_trait::async_trait;
-use event_hex::application::ports::domain_event_handlers::{ProjectionUpdaterEventHandler, ProjectionUpdaterEventHandlerFactory};
-use event_hex::domain::domain_event::{DomainEventHandler, DomainEventHandlerFactory};
-use event_hex::shared_kernel::errors::DomainEventHandlerError;
+use event_hex::domain_event::{DomainEventHandler, DomainEventHandlerFactory};
+use event_hex::domain_event_handlers::{ProjectionUpdaterEventHandler, ProjectionUpdaterEventHandlerFactory};
+use event_hex::errors::DomainEventHandlerError;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 

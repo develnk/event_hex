@@ -1,7 +1,7 @@
-use crate::application::ports::transaction::TransactionContext;
-use crate::domain::domain::EntityId;
-use crate::domain::domain_event::DomainEvent;
-use crate::shared_kernel::errors::{CommandHandlerError, QueryHandlerError};
+use crate::domain_event::DomainEvent;
+use crate::errors::{CommandHandlerError, QueryHandlerError};
+use crate::persistence::transaction::EventTransactionContext;
+use crate::prelude::*;
 use async_trait::async_trait;
 use downcast_rs::{impl_downcast, Downcast};
 use std::any::Any;
@@ -20,7 +20,7 @@ where
     // The command changes the aggregate state. As a result, the aggregate generates an array
     // of domain events that need to be published in the application layer.
     // In some situations, it's useful to return the aggregate id that the command interacted with.
-    async fn handle(&self, command: C, ctx: Option<&mut dyn TransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
+    async fn handle(&self, command: C, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>;
 }
 
 // Factory will create a specific CommandHandler.

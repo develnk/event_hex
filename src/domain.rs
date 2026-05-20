@@ -1,6 +1,6 @@
-use crate::domain::domain_event::{DomainEvent, StoredEvent};
-use crate::shared_kernel::auditable::Auditable;
-use crate::shared_kernel::errors::DomainError;
+use crate::auditable::Auditable;
+use crate::domain_event::{DomainEvent, StoredEvent};
+use crate::errors::DomainError;
 #[cfg(feature = "mongo")]
 use bson::Bson;
 use serde::de::DeserializeOwned;
