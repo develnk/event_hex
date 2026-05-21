@@ -1,5 +1,5 @@
 /*
 * Adapters for data persistence (Repository trait implementations)
 */
-pub mod mongo_transaction;
+pub mod transaction_manager;
 

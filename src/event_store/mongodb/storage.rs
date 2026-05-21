@@ -2,8 +2,8 @@ use crate::domain::{AggregateRoot, EntityId};
 use crate::domain_event::{Snapshot, StoredEvent};
 use crate::errors::DomainError;
 use crate::errors::EventStoreError;
-use crate::event_store::storage::EventStoreStorage;
-use crate::persistence::mongodb::mongo_transaction::MongoContext;
+use crate::event_store::storage::EventStorage;
+use crate::persistence::mongodb::transaction_manager::MongoContext;
 use crate::persistence::transaction::EventTransactionContext;
 use async_trait::async_trait;
 use bson::doc;
@@ -15,12 +15,12 @@ use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
 /// MongoDB event store implementation.
-pub struct MongoEventStoreStorage<A: AggregateRoot + Send + Sync + 'static> {
+pub struct Storage<A: AggregateRoot + Send + Sync + 'static> {
     events_collection: Collection<StoredEvent>,
     snapshots_collection: Collection<Snapshot<A>>,
 }
 
-impl<A> MongoEventStoreStorage<A>
+impl<A> Storage<A>
 where
     A: AggregateRoot + Send + Sync + 'static,
 {
@@ -33,7 +33,7 @@ where
 }
 
 #[async_trait]
-impl<A> EventStoreStorage<A> for MongoEventStoreStorage<A>
+impl<A> EventStorage<A> for Storage<A>
 where
     A: AggregateRoot + DeserializeOwned + Send + Sync + 'static,
 {

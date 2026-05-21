@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 /// Abstraction of event store operations. Allows replacing MongoDB with a mock for testing.
 #[async_trait]
-pub trait EventStoreStorage<A: AggregateRoot>: Send + Sync {
+pub trait EventStorage<A: AggregateRoot>: Send + Sync {
     async fn find_last_event(&self, ctx: &mut dyn EventTransactionContext, aggregate_id: &EntityId, aggregate_type: &str) -> Result<Option<StoredEvent>, EventStoreError>;
 
     async fn insert_events(&self, ctx: &mut dyn EventTransactionContext, events: Vec<StoredEvent>) -> Result<(), EventStoreError>;

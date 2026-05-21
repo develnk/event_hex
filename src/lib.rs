@@ -22,6 +22,8 @@ pub mod prelude {
     pub use crate::domain_event::{DomainEvent, DomainEventHandler, DomainEventHandlerFactory, Snapshot, StoredEvent};
     pub use crate::domain_event_handlers::{ProjectionUpdaterEventHandler, ProjectionUpdaterEventHandlerFactory};
     pub use crate::errors::{CommandHandlerError, DomainError, DomainEventHandlerError, ProjectionError, QueryHandlerError};
+    pub use crate::event_store_repository::EventRepository;
+    pub use crate::persistence::transaction::EventTransactionContext;
     pub use crate::projection::{ProjectionDtoEventApplier, ProjectionRepository};
 }
 

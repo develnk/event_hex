@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 /// Shared Event Repository
 #[async_trait]
-pub trait EventStoreRepository<A>: Send + Sync
+pub trait EventRepository<A>: Send + Sync
 where
     A: AggregateRoot + Send + Sync + 'static,
 {

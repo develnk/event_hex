@@ -1,8 +1,8 @@
 use crate::domain::{AggregateContainer, AggregateRoot, EntityId};
 use crate::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
 use crate::errors::EventStoreError;
-use crate::event_store::storage::EventStoreStorage;
-use crate::event_store_repository::EventStoreRepository;
+use crate::event_store::storage::EventStorage;
+use crate::event_store_repository::EventRepository;
 use crate::persistence::transaction::EventTransactionContext;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -12,16 +12,16 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 /// Event Store repository working through a storage abstraction.
-pub struct EventStoreRepositoryImpl<A: AggregateRoot + Send + Sync + 'static> {
-    storage: Arc<dyn EventStoreStorage<A>>,
+pub struct EventRepositoryImpl<A: AggregateRoot + Send + Sync + 'static> {
+    storage: Arc<dyn EventStorage<A>>,
     snapshot_threshold: u8,
 }
 
-impl<A> EventStoreRepositoryImpl<A>
+impl<A> EventRepositoryImpl<A>
 where
     A: AggregateRoot + Send + Sync + 'static,
 {
-    pub fn new(storage: Arc<dyn EventStoreStorage<A>>, threshold: u8) -> Self {
+    pub fn new(storage: Arc<dyn EventStorage<A>>, threshold: u8) -> Self {
         Self {
             storage,
             snapshot_threshold: threshold,
@@ -30,7 +30,7 @@ where
 }
 
 #[async_trait]
-impl<A> EventStoreRepository<A> for EventStoreRepositoryImpl<A>
+impl<A> EventRepository<A> for EventRepositoryImpl<A>
 where
     A: AggregateRoot + DeserializeOwned + 'static,
 {
@@ -98,7 +98,7 @@ where
     async fn load_aggregate(&self, ctx: &mut dyn EventTransactionContext, id: &EntityId) -> Result<Option<AggregateContainer<A>>, EventStoreError> {
         let snapshot_result: Option<Snapshot<A>> = self.storage.find_latest_snapshot(ctx, id).await?;
         let version = snapshot_result.as_ref().map_or(0, |s| s.version);
-        let events = <Self as EventStoreRepository<A>>::get_events_since_version(self, ctx, id, version).await?;
+        let events = <Self as EventRepository<A>>::get_events_since_version(self, ctx, id, version).await?;
 
         let mut aggregate: AggregateContainer<A>;
 
@@ -127,7 +127,7 @@ where
 }
 
 /// MongoDB Event Store repository — backward compatibility with existing code.
-pub type MongoEventStoreRepository<A> = EventStoreRepositoryImpl<A>;
+pub type MongoEventStoreRepository<A> = EventRepositoryImpl<A>;
 
 /// Event chain integrity verification.
 pub fn verify_event_chain(aggregate_id: &EntityId, aggregate_type: &str, events: &[StoredEvent]) -> Result<(), EventStoreError> {

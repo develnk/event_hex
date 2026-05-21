@@ -1,32 +1,26 @@
-use std::sync::Arc;
-
 use crate::adapters::configurations::settings::get_app_settings;
-
 use crate::{
     application::command::domain::identity::commands::AccessAccountCommand,
     domain::identity_access_management::identity::aggregate::access_account::AccessAccountAggregateRoot,
 };
 use async_trait::async_trait;
-use event_hex::cqrs::{CommandHandler, CommandHandlerFactory};
-use event_hex::domain::{AggregateContainer, EntityId};
-use event_hex::domain_event::DomainEvent;
-use event_hex::errors::{CommandHandlerError, EventHexError};
-use event_hex::event_store::mongodb::event_store::MongoEventStoreStorage;
+use event_hex::errors::EventHexError;
+use event_hex::event_store::mongodb::storage::Storage;
 use event_hex::event_store::repository::MongoEventStoreRepository;
-use event_hex::event_store_repository::EventStoreRepository;
-use event_hex::persistence::transaction::EventTransactionContext;
+use event_hex::prelude::*;
 use mongodb::Client;
+use std::sync::Arc;
 
 pub struct AccessAccountHandler<R>
 where
-    R: EventStoreRepository<AccessAccountAggregateRoot> + ?Sized,
+    R: EventRepository<AccessAccountAggregateRoot> + ?Sized,
 {
     event_repository: Arc<R>,
 }
 
 impl<R> AccessAccountHandler<R>
 where
-    R: EventStoreRepository<AccessAccountAggregateRoot> + ?Sized,
+    R: EventRepository<AccessAccountAggregateRoot> + ?Sized,
 {
     pub fn new(event_repository: Arc<R>) -> Self {
         Self { event_repository }
@@ -46,7 +40,7 @@ impl AccessAccountHandlerFactory {
 #[async_trait]
 impl<R> CommandHandler<AccessAccountCommand> for AccessAccountHandler<R>
 where
-    R: EventStoreRepository<AccessAccountAggregateRoot> + Send + Sync + 'static,
+    R: EventRepository<AccessAccountAggregateRoot> + Send + Sync + 'static,
 {
     async fn handle(&self, command: AccessAccountCommand, ctx: Option<&mut dyn EventTransactionContext>) -> Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError> {
         match command {
@@ -107,7 +101,7 @@ where
 impl CommandHandlerFactory<AccessAccountCommand> for AccessAccountHandlerFactory {
     async fn create(&self) -> Result<Box<dyn CommandHandler<AccessAccountCommand>>, CommandHandlerError> {
         let settings = get_app_settings();
-        let storage = Arc::new(MongoEventStoreStorage::<AccessAccountAggregateRoot>::new(
+        let storage = Arc::new(Storage::<AccessAccountAggregateRoot>::new(
             Arc::clone(&self.client),
             settings.database.dbname.as_str(),
         ));
