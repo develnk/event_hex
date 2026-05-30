@@ -9,7 +9,6 @@ use chrono::Utc;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::sync::Arc;
-use uuid::Uuid;
 
 /// Event Store repository working through a storage abstraction.
 pub struct EventRepositoryImpl<A: AggregateRoot + Send + Sync + 'static> {
@@ -32,7 +31,7 @@ where
 #[async_trait]
 impl<A> EventRepository<A> for EventRepositoryImpl<A>
 where
-    A: AggregateRoot + DeserializeOwned + 'static,
+    A: AggregateRoot + Default + DeserializeOwned + 'static,
 {
     async fn save_aggregate(&self, ctx: &mut dyn EventTransactionContext, container: AggregateContainer<A>) -> Result<(), EventStoreError>
     where
@@ -44,7 +43,7 @@ where
         let current_version = container.version();
         let mut next_version = current_version.clone();
 
-        let last_event = self.storage.find_last_event(ctx, &aggregate_id, aggregate_type).await?;
+        let last_event = self.storage.find_last_event(ctx, &aggregate_id).await?;
         let mut last_event_hash: Vec<u8> = last_event.map_or(Vec::default(), |e| e.hash);
 
         let new_event_records: Vec<StoredEvent> = container
@@ -56,7 +55,6 @@ where
                 next_version += 1;
                 let pre_event = convert_event_to_event_pre_record(&event);
                 let new_event = Event {
-                    id: Uuid::now_v7(),
                     aggregate_id: aggregate_id.into(),
                     aggregate_type: aggregate_type.to_string(),
                     sequence_number: next_version,
@@ -88,7 +86,7 @@ where
                 data: container.aggregate,
             };
 
-            self.storage.delete_snapshot(ctx, &aggregate_id, aggregate_type).await?;
+            self.storage.delete_snapshot(ctx, &aggregate_id).await?;
             self.storage.insert_snapshot(ctx, snapshot).await?;
         }
 
@@ -104,7 +102,9 @@ where
 
         if let Some(snapshot) = snapshot_result {
             aggregate = AggregateContainer::new(snapshot.data);
-            aggregate.restore_from_snapshot(events[1..].to_vec().as_ref())?;
+            if !events.is_empty() {
+                aggregate.restore_from_snapshot(&events[1..].to_vec())?;
+            }
         } else {
             aggregate = AggregateContainer::restore_from_history(id, events.as_ref())?;
         }

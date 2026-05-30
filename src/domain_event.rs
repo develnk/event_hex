@@ -15,8 +15,11 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Event {
-    pub id: Uuid,
     /// The aggregate instance that emitted the event.
+    #[cfg_attr(
+        feature = "mongo",
+        serde(with = "bson::serde_helpers::uuid_1::AsBinary")
+    )]
     pub aggregate_id: Uuid,
     /// The aggregate type that emitted the event.
     pub aggregate_type: String,
@@ -157,11 +160,17 @@ where
     async fn create(&self) -> Result<Box<dyn DomainEventHandler<E>>, DomainEventHandlerError>;
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct Snapshot<A>
 where
     A: AggregateRoot,
+    A: Default,
 {
+    #[cfg_attr(
+        feature = "mongo",
+        serde(with = "bson::serde_helpers::uuid_1::AsBinary")
+    )]
     pub aggregate_id: Uuid,
     pub aggregate_type: String,
     pub version: u32,

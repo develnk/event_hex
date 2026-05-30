@@ -8,7 +8,7 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait EventRepository<A>: Send + Sync
 where
-    A: AggregateRoot + Send + Sync + 'static,
+    A: AggregateRoot + Default + Send + Sync + 'static,
 {
     // Method for saving aggregate changes.
     async fn save_aggregate(&self, ctx: &mut dyn EventTransactionContext, aggregate: AggregateContainer<A>) -> Result<(), EventStoreError>

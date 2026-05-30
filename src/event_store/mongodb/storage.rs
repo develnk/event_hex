@@ -15,14 +15,14 @@ use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
 /// MongoDB event store implementation.
-pub struct Storage<A: AggregateRoot + Send + Sync + 'static> {
+pub struct Storage<A: AggregateRoot + Default + Send + Sync + 'static> {
     events_collection: Collection<StoredEvent>,
     snapshots_collection: Collection<Snapshot<A>>,
 }
 
 impl<A> Storage<A>
 where
-    A: AggregateRoot + Send + Sync + 'static,
+    A: AggregateRoot + Default + Send + Sync + 'static,
 {
     pub fn new(client: Arc<Client>, db_name: &str) -> Self {
         Self {
@@ -35,17 +35,16 @@ where
 #[async_trait]
 impl<A> EventStorage<A> for Storage<A>
 where
-    A: AggregateRoot + DeserializeOwned + Send + Sync + 'static,
+    A: AggregateRoot + Default + DeserializeOwned + Send + Sync + 'static,
 {
     async fn find_last_event(
         &self,
         ctx: &mut dyn EventTransactionContext,
         aggregate_id: &EntityId,
-        aggregate_type: &str,
     ) -> Result<Option<StoredEvent>, EventStoreError> {
         let filter = doc! {
             "event.aggregate_id": aggregate_id.as_uuid(),
-            "event.aggregate_type": aggregate_type
+            "event.aggregate_type": A::aggregate_type()
         };
         let find_options =
             FindOneOptions::builder().sort(doc! { "event.sequence_number": -1 }).build();
@@ -119,11 +118,10 @@ where
         &self,
         ctx: &mut dyn EventTransactionContext,
         aggregate_id: &EntityId,
-        aggregate_type: &str,
     ) -> Result<(), EventStoreError> {
         let filter = doc! {
             "aggregate_id": aggregate_id.as_uuid(),
-            "aggregate_type": aggregate_type
+            "aggregate_type": A::aggregate_type()
         };
         let options = FindOneAndDeleteOptions::builder().build();
 
@@ -215,9 +213,12 @@ where
     async fn find_latest_snapshot(
         &self,
         ctx: &mut dyn EventTransactionContext,
-        id: &EntityId,
+        aggregate_id: &EntityId,
     ) -> Result<Option<Snapshot<A>>, EventStoreError> {
-        let filter = doc! { "aggregate_id": id.as_uuid() };
+        let filter = doc! {
+            "aggregate_id": aggregate_id.as_uuid(),
+            "aggregate_type": A::aggregate_type()
+        };
         let find_options = FindOneOptions::builder().sort(doc! { "version": -1 }).build();
 
         let result = if let Some(mongo_ctx) = ctx.as_any_mut().downcast_mut::<MongoContext>() {
