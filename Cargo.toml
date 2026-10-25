@@ -14,45 +14,53 @@ documentation = "https://docs.rs/event_hex"
 rust-version = "1.95.0"
 
 [dependencies]
-tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread"] }
 # Serialization/Deserialization
-serde = { version = "1.0.228", features = ["derive", "serde_derive"] }
-serde_with = { version = "3.20.0" }
-serde_json = "1.0.149"
+serde = { version = "1.0", features = ["derive", "serde_derive"] }
+serde_with = { version = "3.24" }
+serde_json = "1.0"
 # Uuid generation
-uuid = { version = "1.23.1", features = ["serde", "v4", "fast-rng", "v7"] }
+uuid = { version = "1.29", features = ["serde", "v4", "fast-rng", "v7"] }
 # Time
-chrono = { version = "0.4.44", features = ["serde"] }
+chrono = { version = "0.4.45", features = ["serde"] }
 # Build async trait
-async-trait = "0.1.89"
+async-trait = "0.1.92"
 # Builder pattern
-typed-builder = { version = "0.23.2" }
+typed-builder = { version = "0.23" }
 # Sql library for async impl
-sqlx = { version = "0.8.0", features = ["runtime-tokio-native-tls", "uuid", "json", "chrono"], optional = true }
+sqlx = { version = "0.9", features = [
+  "uuid",
+  "json",
+  "chrono",
+], optional = true }
 bb8 = "0.9.1"
 
 # MongoDB
-bson = { version = "3.1.0", features = ["uuid-1", "serde_with-3", "serde"], optional = true }
-mongodb = { version = "3.6.0", features = ["bson-3"], optional = true }
+bson = { version = "3.1.0", features = [
+  "uuid-1",
+  "serde_with-3",
+  "serde",
+], optional = true }
+mongodb = { version = "3.9", features = ["bson-3"], optional = true }
 
 # Kafka library
 rdkafka = { version = "0.39.0", features = ["ssl-vendored"], optional = true }
 # Rabbit library
-lapin = { version = "4.7.2", optional = true }
+lapin = { version = "4.12", optional = true }
 # Base
 derive-getters = "0.5.0"
-erased-serde = "0.4.10"
-config = { version = "0.15.22", optional = true }
+erased-serde = "0.4"
+config = { version = "0.15", optional = true }
 sha2 = "0.11.0"
 bincode = { version = "2.0.1", features = ["serde"] }
-thiserror = "2.0.18"
+thiserror = "2.0"
 downcast-rs = "2.0.2"
-futures = "0.3.32"
+futures = "0.3"
 tracing = "0.1"
 
 [dev-dependencies]
-tokio = { version = "1.52.3", features = ["full"] }
-mockall = "0.14"
+tokio = { version = "1.54", features = ["full"] }
+mockall = "0.15"
 
 [features]
 default = []
