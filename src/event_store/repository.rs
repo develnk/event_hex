@@ -1,5 +1,6 @@
+use crate::audit::EventAudit;
 use crate::domain::{AggregateContainer, AggregateRoot, EntityId};
-use crate::domain_event::{calculate_hash, convert_event_to_event_pre_record, DomainEvent, Event, Snapshot, StoredEvent};
+use crate::domain_event::{calculate_hash, convert_event_to_event_pre_record_with_metadata, DomainEvent, Event, Snapshot, StoredEvent};
 use crate::errors::EventStoreError;
 use crate::event_store::storage::EventStorage;
 use crate::event_store_repository::EventRepository;
@@ -8,6 +9,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde_json::Value;
 use std::sync::Arc;
 
 /// Event Store repository working through a storage abstraction.
@@ -46,14 +48,22 @@ where
         let last_event = self.storage.find_last_event(ctx, &aggregate_id).await?;
         let mut last_event_hash: Vec<u8> = last_event.map_or(Vec::default(), |e| e.hash);
 
-        let new_event_records: Vec<StoredEvent> = container
-            .get_events()
+        let events = container.get_events();
+        let event_audits = container.get_event_audits();
+        let aggregate_audit = container.audit().cloned();
+
+        let new_event_records: Vec<StoredEvent> = events
             .iter()
-            .cloned()
             .enumerate()
-            .map(|(_i, event)| {
+            .map(|(i, event)| {
                 next_version += 1;
-                let pre_event = convert_event_to_event_pre_record(&event);
+                // Every event stores its own audit information. If the caller did
+                // not push events through the container, fall back to the
+                // aggregate-level audit information.
+                let audit = event_audits.get(i).cloned().flatten().or_else(|| aggregate_audit.clone());
+                let metadata = audit.as_ref().map_or(Value::Null, |audit| audit.metadata().clone());
+                let timestamp = audit.as_ref().map_or_else(Utc::now, |audit| audit.occurred_at());
+                let pre_event = convert_event_to_event_pre_record_with_metadata(event, metadata);
                 let new_event = Event {
                     aggregate_id: aggregate_id.into(),
                     aggregate_type: aggregate_type.to_string(),
@@ -61,7 +71,7 @@ where
                     event_type: pre_event.event_type,
                     payload: pre_event.event,
                     metadata: pre_event.metadata,
-                    timestamp: Utc::now(),
+                    timestamp,
                     previous_hash: last_event_hash.clone(),
                 };
 
@@ -84,6 +94,7 @@ where
                 version: next_version,
                 timestamp: Utc::now(),
                 data: container.aggregate,
+                audit: aggregate_audit,
             };
 
             self.storage.delete_snapshot(ctx, &aggregate_id).await?;
@@ -101,7 +112,12 @@ where
         let mut aggregate: AggregateContainer<A>;
 
         if let Some(snapshot) = snapshot_result {
-            aggregate = AggregateContainer::new(snapshot.data);
+            // Snapshots written before audit support do not have audit information;
+            // fall back to the snapshot timestamp in that case.
+            let audit = snapshot
+                .audit
+                .or_else(|| Some(EventAudit::new(Value::Null, snapshot.timestamp)));
+            aggregate = AggregateContainer::from_snapshot(snapshot.data, audit);
             if !events.is_empty() {
                 aggregate.restore_from_snapshot(&events[1..].to_vec())?;
             }

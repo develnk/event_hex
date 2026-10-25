@@ -1,16 +1,17 @@
+pub mod audit;
+pub mod bus;
+pub mod cqrs;
 pub mod domain;
 pub mod domain_event;
-pub mod errors;
-pub mod auditable;
-pub mod bus;
-pub mod event_store;
-pub mod persistence;
 pub mod domain_event_handlers;
+pub mod errors;
+pub mod event_store;
 pub mod event_store_repository;
-pub mod cqrs;
+pub mod persistence;
 pub mod projection;
 
 pub mod prelude {
+    pub use crate::audit::{EventAudit, EventMetadata};
     pub use crate::bus::in_memory::command_bus::CommandBus;
     pub use crate::bus::in_memory::event_bus::EventBus;
     pub use crate::bus::in_memory::query_bus::QueryBus;

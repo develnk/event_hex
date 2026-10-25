@@ -1,3 +1,4 @@
+use crate::audit::EventAudit;
 use crate::domain::{AggregateRoot, EntityId};
 use crate::errors::DomainEventHandlerError;
 use crate::types::SequenceNumber;
@@ -116,6 +117,15 @@ pub fn convert_event_to_event_pre_record<E: DomainEvent + Serialize>(event: &E) 
     }
 }
 
+/// Converts a domain event to an event-store record together with its audit metadata.
+pub fn convert_event_to_event_pre_record_with_metadata<E: DomainEvent + Serialize>(event: &E, metadata: Value) -> EventPreRecord {
+    EventPreRecord {
+        metadata,
+        event: serde_json::to_value(event).unwrap_or(Value::Null),
+        event_type: event.event_type_name().to_string(),
+    }
+}
+
 /// Common trait for all domain events.
 #[async_trait]
 pub trait DomainEvent: Debug + ErasedSerialize + Send + Sync + 'static {
@@ -176,4 +186,7 @@ where
     pub version: u32,
     pub timestamp: DateTime<Utc>,
     pub data: A,
+    /// Audit information of the aggregate at the moment the snapshot was taken.
+    #[serde(default)]
+    pub audit: Option<EventAudit>,
 }
