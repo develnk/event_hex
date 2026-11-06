@@ -24,6 +24,8 @@ impl<A> Storage<A>
 where
     A: AggregateRoot + Default + Send + Sync + 'static,
 {
+    /// Creates a new MongoDB storage using the `events` and `snapshots`
+    /// collections of the given database.
     pub fn new(client: Arc<Client>, db_name: &str) -> Self {
         Self {
             events_collection: client.database(db_name).collection("events"),

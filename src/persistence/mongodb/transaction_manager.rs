@@ -11,19 +11,22 @@ use crate::persistence::transaction::{
     ErasedResult, EventTransactionContext, EventTransactionHandler, EventTransactionManager,
 };
 
-// Mongo context implementation
+/// MongoDB transaction context.
+///
+/// Wraps a MongoDB [`ClientSession`] so that storage backends can participate
+/// in the same transaction.
 pub struct MongoContext {
+    /// The underlying MongoDB session.
     pub session: ClientSession,
 }
 
-// Abstract transaction context implementation
 impl EventTransactionContext for MongoContext {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }
 
-// Context for working without transactions (standalone mode)
+// Context for working without transactions (standalone mode).
 struct NoopTransactionContext;
 
 impl EventTransactionContext for NoopTransactionContext {
@@ -32,12 +35,19 @@ impl EventTransactionContext for NoopTransactionContext {
     }
 }
 
+/// MongoDB transaction manager.
+///
+/// Detects whether the connected MongoDB instance supports transactions and
+/// transparently falls back to a no-op context in standalone mode.
 pub struct MongoTransactionManager {
     client: Arc<Client>,
     use_transactions: bool,
 }
 
 impl MongoTransactionManager {
+    /// Creates a new manager for the given client.
+    ///
+    /// Transaction support is detected automatically.
     pub async fn new(client: Arc<Client>) -> Self {
         let use_transactions = Self::detect_transaction_support(&client).await;
         Self { client, use_transactions }
@@ -63,7 +73,7 @@ impl MongoTransactionManager {
 impl EventTransactionManager for MongoTransactionManager {
     async fn run_transaction(&self, handler: EventTransactionHandler) -> Result<ErasedResult, EventHexError> {
         if self.use_transactions {
-            // Transaction logic
+            // Transaction logic.
             let mut session = self.client.start_session().await.map_err(|e| EventHexError::MongoError(e))?;
 
             session
@@ -87,7 +97,7 @@ impl EventTransactionManager for MongoTransactionManager {
                 }
             }
         } else {
-            // Without transaction (standalone mode)
+            // Without transaction (standalone mode).
             let mut ctx = NoopTransactionContext;
             handler(&mut ctx).await
         }

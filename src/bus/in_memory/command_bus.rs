@@ -15,6 +15,10 @@ use tokio::sync::RwLock;
 
 type GenericCommandDispatcher = Arc<dyn Send + Sync + for<'a> Fn(Box<dyn Command>, Option<&'a mut dyn EventTransactionContext>) -> Pin<Box<dyn Future<Output=Result<(EntityId, Vec<Box<dyn DomainEvent>>), CommandHandlerError>> + Send + 'a>>>;
 
+/// In-memory command bus.
+///
+/// Stores command handlers keyed by the [`TypeId`] of the command they handle
+/// and dispatches commands synchronously (from the caller's point of view).
 pub struct CommandBus {
     handlers: Arc<RwLock<HashMap<TypeId, GenericCommandDispatcher>>>,
 }
@@ -32,6 +36,7 @@ impl Default for CommandBus {
 }
 
 impl CommandBus {
+    /// Creates an empty command bus.
     pub fn new() -> Self {
         Self { handlers: Arc::new(RwLock::new(HashMap::new())) }
     }

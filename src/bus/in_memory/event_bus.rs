@@ -11,6 +11,10 @@ use tokio::sync::RwLock;
 
 type GenericDomainEventDispatcher = Arc<dyn Send + Sync + Fn(&dyn DomainEvent) -> Pin<Box<dyn Future<Output=()> + Send>>>;
 
+/// In-memory event bus.
+///
+/// Stores event handlers keyed by the [`TypeId`] of the event they handle and
+/// publishes each event to every handler registered for its type.
 #[derive(Default)]
 pub struct EventBus {
     handlers: Arc<RwLock<HashMap<TypeId, Vec<GenericDomainEventDispatcher>>>>,
@@ -23,6 +27,7 @@ impl Clone for EventBus {
 }
 
 impl EventBus {
+    /// Creates an empty event bus.
     pub fn new() -> Self {
         EventBus { handlers: Arc::new(RwLock::new(HashMap::new())) }
     }

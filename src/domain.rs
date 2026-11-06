@@ -7,14 +7,20 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use uuid::Uuid;
 
+/// Unique identifier of an aggregate or other domain entity.
+///
+/// Wraps a [`Uuid`] (generated as a v7 UUID for time-ordering) and can be
+/// converted to and from [`Uuid`] as well as MongoDB's BSON UUID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct EntityId(Uuid);
 
 impl EntityId {
+    /// Generates a new, time-ordered entity id.
     pub fn new() -> Self {
         Self(Uuid::now_v7())
     }
 
+    /// Returns the underlying [`Uuid`].
     pub fn as_uuid(&self) -> Uuid {
         self.0
     }
@@ -58,13 +64,21 @@ impl From<EntityId> for Uuid {
     }
 }
 
+/// The aggregate root, the primary building block of a domain model.
+///
+/// Aggregates encapsulate domain invariants and produce [`DomainEvent`]s when
+/// their state changes. Implementors are responsible for applying events and
+/// tracking the aggregate version.
 pub trait AggregateRoot: Sized + Send + Sync + Serialize {
+    /// The domain event type emitted by this aggregate.
     type Event: DomainEvent + Clone + Serialize + DeserializeOwned;
 
     /// Returns the unique identifier of the aggregate.
     fn id(&self) -> &EntityId;
 
-    // Prepare a string representation for each aggregate
+    /// Returns a stable string representation of the aggregate type.
+    ///
+    /// Used to group and address events in the event store.
     fn aggregate_type() -> &'static str;
 
     /// Applies an event to restore state.
@@ -94,14 +108,17 @@ pub trait AggregateRoot: Sized + Send + Sync + Serialize {
     /// Restores audit information persisted in the event store.
     ///
     /// Called by [`AggregateContainer`] when replaying stored events or restoring
-    /// from a snapshot. `metadata` may be [`serde_json::Value::Null`] for events
+    /// from a snapshot. `metadata` may be `serde_json::Value::Null` for events
     /// written before audit support, in which case the aggregate may fall back to
     /// [`EventAudit::occurred_at`].
     ///
     /// The default implementation is a no-op.
     fn restore_audit(&mut self, _audit: &EventAudit) {}
 
-    // Convert a stored event from the database into a domain event.
+    /// Converts a stored event from the database into a domain event.
+    ///
+    /// The event type is injected into the payload before deserializing the
+    /// whole event enum at once.
     fn convert_to_domain_event(stored_event: StoredEvent) -> Result<Self::Event, DomainError> {
         let mut val = stored_event.event.payload;
         // Add type field directly into the data object to deserialize the entire enum at once
@@ -120,13 +137,20 @@ pub trait AggregateRoot: Sized + Send + Sync + Serialize {
     /// Returns the current version of the aggregate (number of applied events).
     fn get_version(&self) -> u32;
 
+    /// Sets the current version of the aggregate.
     fn set_version(&mut self, version: u32);
 
+    /// Increments the current version of the aggregate.
     fn increment_version(&mut self);
 }
 
-// This wrapper separates domain model data from infrastructure logic (events).
+/// Separates domain model data from infrastructure logic (events).
+///
+/// Wraps an aggregate together with its uncommitted events and audit
+/// information, so that the aggregate stays a pure domain object while the
+/// container takes care of event bookkeeping.
 pub struct AggregateContainer<A: AggregateRoot> {
+    /// The wrapped domain aggregate.
     pub aggregate: A,
     /// Events that were applied to the aggregate but are not persisted yet.
     uncommitted_events: Vec<A::Event>,
@@ -170,12 +194,15 @@ impl<A: AggregateRoot> AggregateContainer<A> {
         self.audit.as_ref()
     }
 
+    /// Returns the current version of the wrapped aggregate.
     pub fn version(&self) -> u32 {
         self.aggregate.get_version()
     }
 
     /// Restores the aggregate from events from the very beginning.
-    /// TODO Change stored_events: &Vec<StoredEvent> to events: Vec<A::Event> to avoid depending on the event storage structure in the DB
+    ///
+    /// TODO Change `stored_events: &Vec<StoredEvent>` to `events: Vec<A::Event>`
+    /// to avoid depending on the event storage structure in the DB.
     pub fn restore_from_history(entity_id: &EntityId, stored_events: &Vec<StoredEvent>) -> Result<Self, DomainError> {
         if stored_events.is_empty() {
             return Err(DomainError::AggregateNotFound {
@@ -198,6 +225,7 @@ impl<A: AggregateRoot> AggregateContainer<A> {
         Ok(container)
     }
 
+    /// Applies events that occurred after a snapshot was taken.
     pub fn restore_from_snapshot(&mut self, after_events: &Vec<StoredEvent>) -> Result<(), DomainError> {
         for stored_event in after_events {
             self.apply_stored_event(stored_event)?;
@@ -241,6 +269,7 @@ impl<A: AggregateRoot> AggregateContainer<A> {
         self.uncommitted_events.push(event);
     }
 
+    /// Returns the uncommitted events applied to the aggregate so far.
     pub fn get_events(&self) -> Vec<A::Event> {
         self.uncommitted_events.clone()
     }
@@ -250,6 +279,7 @@ impl<A: AggregateRoot> AggregateContainer<A> {
         self.event_audits.clone()
     }
 
+    /// Returns the uncommitted events as type-erased trait objects.
     pub fn get_erased_events(&self) -> Vec<Box<dyn DomainEvent>> {
         let events = self.uncommitted_events.clone();
         events
@@ -258,11 +288,13 @@ impl<A: AggregateRoot> AggregateContainer<A> {
             .collect()
     }
 
+    /// Takes the uncommitted events, leaving the container empty.
     pub fn take_events(&mut self) -> Vec<A::Event> {
         self.event_audits.clear();
         std::mem::take(&mut self.uncommitted_events)
     }
 
+    /// Takes the uncommitted events as type-erased trait objects.
     pub fn take_erased_events(&mut self) -> Vec<Box<dyn DomainEvent>> {
         self.event_audits.clear();
         let events = std::mem::take(&mut self.uncommitted_events);

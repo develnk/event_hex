@@ -22,6 +22,10 @@ impl<A> EventRepositoryImpl<A>
 where
     A: AggregateRoot + Send + Sync + 'static,
 {
+    /// Creates a new repository over the given storage backend.
+    ///
+    /// `threshold` controls how often aggregate snapshots are written: a
+    /// snapshot is taken after every `threshold` applied events.
     pub fn new(storage: Arc<dyn EventStorage<A>>, threshold: u8) -> Self {
         Self {
             storage,

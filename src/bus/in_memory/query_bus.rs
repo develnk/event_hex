@@ -12,6 +12,10 @@ use tokio::sync::RwLock;
 
 type GenericQueryDispatcher = Arc<dyn Send + Sync + Fn(Box<dyn Query>) -> Pin<Box<dyn Future<Output=Result<Box<dyn Any + Send + Sync + 'static>, QueryHandlerError>> + Send>>>;
 
+/// In-memory query bus.
+///
+/// Stores query handlers keyed by the [`TypeId`] of the query they handle and
+/// dispatches queries to their handler, returning the type-erased response.
 pub struct QueryBus {
     handlers: Arc<RwLock<HashMap<TypeId, GenericQueryDispatcher>>>,
 }
@@ -31,6 +35,7 @@ impl Default for QueryBus {
 }
 
 impl QueryBus {
+    /// Creates an empty query bus.
     pub fn new() -> Self {
         QueryBus {
             handlers: Arc::new(RwLock::new(HashMap::new())),

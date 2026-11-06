@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 /// Audit information attached to a persisted domain event.
 ///
-/// The shared kernel does not interpret [`EventAudit::metadata`]: it is an
+/// The shared kernel does not interpret [`EventAudit::metadata()`]: it is an
 /// application-defined JSON document (for example "who changed the aggregate and
 /// when") which is stored in `Event::metadata` verbatim. This keeps the generic
 /// event store free of any particular audit model.

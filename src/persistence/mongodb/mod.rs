@@ -1,5 +1,4 @@
-/*
-* Adapters for data persistence (Repository trait implementations)
-*/
-pub mod transaction_manager;
+//! MongoDB persistence adapters.
 
+/// MongoDB transaction manager.
+pub mod transaction_manager;
