@@ -1,6 +1,6 @@
 [package]
 name = "event_hex"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2024"
 description = "A pragmatic Rust toolkit for Domain-Driven Design with first-class support for event sourcing and CQRS."
 keywords = ["hexagonal", "architecture", "ddd", "event-sourcing", "cqrs"]
